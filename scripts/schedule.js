@@ -26,20 +26,17 @@ let announceDate    = new Date(today.getYear(), today.getMonth(), 21, 5, 30, 0);
 // ================================================================================================
 // Module exports
 // ================================================================================================
-module.exports = function (robot) {
-  setSchedule();
+module.exports = {
+  addSchedule : addSchedule
 };
-function setSchedule() {
-  let j = schedule.scheduleJob('35 * * * *', function () {
-    console.log('The answer to life, the universe, and everything!');
-  });
-}
 
 function addSchedule() {
+  console.log('Set schedule');
   let today = new Date();
   let nextDate = today + ANNOUNCE_SCHEDULE_DAYS;
   let j = schedule.scheduleJob(nextDate, function () {
-    console.log('The answer to life, the universe, and everything!');
+    console.log('Sending out scheduled agenda');
     agenda.listAgenda();
+    addSchedule();
   });
 }
