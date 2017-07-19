@@ -19,10 +19,8 @@ const ANNOUNCE_TIME_MIN = 15;
 
 // Amount of days to wait before next announcement. 7 = weekly, 1 = daily etc.
 const ANNOUNCE_SCHEDULE_DAYS = 7;
+const ANNOUNCE_DAY_OF_WEEK   = 2;
 
-//const ANNOUNCE_TIME = new Date(0, 0, 0, 6, 15, 0, 0);
-let today           = new Date();
-let announceDate    = new Date(today.getYear(), today.getMonth(), 21, 5, 30, 0);
 // ================================================================================================
 // Module exports
 // ================================================================================================
@@ -30,13 +28,23 @@ module.exports = {
   addSchedule : addSchedule
 };
 
-function addSchedule() {
-  console.log('Set schedule');
+function addSchedule(msg) {
   let today = new Date();
-  let nextDate = today + ANNOUNCE_SCHEDULE_DAYS;
+  let nextDayOfWeek = getNextDayOfWeek(today, ANNOUNCE_DAY_OF_WEEK);
+  let nextDate = new Date(nextDayOfWeek.getFullYear(), nextDayOfWeek.getMonth(), nextDayOfWeek.getDate(), ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
+  //let nextDate = today.getTime() + 604800000;
+  nextDate.setDate(nextDate.getDate() + ANNOUNCE_SCHEDULE_DAYS);
+  console.log(`Schedule set for: ${nextDate}`);
+  msg.send(`Schedule set for: ${nextDate}`);
   let j = schedule.scheduleJob(nextDate, function () {
     console.log('Sending out scheduled agenda');
     agenda.listAgenda();
     addSchedule();
   });
+}
+
+function getNextDayOfWeek(date, dayOfWeek) {
+  let resultDate = new Date(date.getTime());
+  resultDate.setDate(date.getDate() + (dayOfWeek - date.getDay()) % 7);
+  return resultDate;
 }

@@ -24,10 +24,12 @@ module.exports = function (robot) {
   robot.respond(/re?m(?:ove)? (.+)/i, function (msg) {
     rm(robot, msg);
   });
-  robot.respond(/list/i, function (msg) {
+  robot.respond(/li?st?/i, function (msg) {
     listAgenda(robot, msg);
   });
-  robot.respond(/schedule/i, schedule.addSchedule);
+  robot.respond(/schedule/i, function (msg) {
+    schedule.addSchedule(msg);
+  });
   robot.brain.on('connected', initBrain);
   /**
    * Start the robot brain if it has not already been started
@@ -75,7 +77,7 @@ function rm(robot, msg) {
  */
 function listAgenda(robot, msg) {
   let a = agenda.getAgenda(robot);
-  if (!a || _.isNull(a)) return msg.send('Empty agenda');
+  if (!a || _.isNull(a) || a.length < 1) return msg.send('Empty agenda');
   console.log(a);
   let niceAgenda = "";
   for (let i=1; i < a.length+1; i++) {
