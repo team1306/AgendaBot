@@ -2,7 +2,10 @@
 //   Redeploys AkitaBox production apps
 //
 // Commands:
-//   hubot my slack id - responds with your Slack ID
+//   hubot add <item> - Adds <item> to the agenda
+//   hubot rm/rem/remove <item> - Removes <item> from the agenda
+//   hubot li/list - List the agenda
+//   hubot schedule - Update the schedule
 
 // ================================================================================================
 // Module dependencies
