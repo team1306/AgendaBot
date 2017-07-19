@@ -74,9 +74,8 @@ function rm(robot, msg) {
  * @param {Object}  msg    Incoming message
  */
 function listAgenda(robot, msg) {
-  let _a = agenda.getAgenda(robot);
-  if (!_a || _.isNull(_a)) return msg.send('Empty agenda');
-  let a = _a.sort();
+  let a = agenda.getAgenda(robot);
+  if (!a || _.isNull(a)) return msg.send('Empty agenda');
   console.log(a);
   let niceAgenda = "";
   for (let i=1; i < a.length+1; i++) {
