@@ -9,7 +9,8 @@
 // ================================================================================================
 const _        = require('underscore');
 const schedule = require('node-schedule');
-const agenda   = require('./hubot-agenda');
+const agenda   = require('./agenda');
+const utils    = require('./utils');
 
 // 0, 0, 0, HR, MIN, SEC, MS
 
@@ -21,6 +22,8 @@ const ANNOUNCE_TIME_MIN = 15;
 const ANNOUNCE_SCHEDULE_DAYS = 7;
 const ANNOUNCE_DAY_OF_WEEK   = 2;
 
+const ANNOUNCE_CHANNEL = '#part_system';
+
 // ================================================================================================
 // Module exports
 // ================================================================================================
@@ -28,7 +31,10 @@ module.exports = {
   addSchedule : addSchedule
 };
 
-function addSchedule(msg) {
+function addSchedule(robot, msg) {
+  if (!utils.checkUserSlackAdmin(msg)) {
+    return new Error('User does not have permission');
+  }
   let today = new Date();
   let nextDayOfWeek = getNextDayOfWeek(today, ANNOUNCE_DAY_OF_WEEK);
   let nextDate = new Date(nextDayOfWeek.getFullYear(), nextDayOfWeek.getMonth(), nextDayOfWeek.getDate(), ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
@@ -38,7 +44,7 @@ function addSchedule(msg) {
   msg.send(`Schedule set for: ${nextDate}`);
   let j = schedule.scheduleJob(nextDate, function () {
     console.log('Sending out scheduled agenda');
-    agenda.listAgenda();
+    agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule();
   });
 }
@@ -46,5 +52,8 @@ function addSchedule(msg) {
 function getNextDayOfWeek(date, dayOfWeek) {
   let resultDate = new Date(date.getTime());
   resultDate.setDate(date.getDate() + (dayOfWeek - date.getDay()) % 7);
+  if (date.getDate() === resultDate.getDate()) {
+    resultDate.setDate(resultDate.getDate() + 7);
+  }
   return resultDate;
 }

@@ -22,6 +22,7 @@ const REDIS_BRAIN_KEY = "agenda";
 // ================================================================================================
 module.exports = function (robot) {
   robot.respond(/add (.+)/i, function (msg) {
+    console.dir(msg.message.user);
     add(robot, msg);
   });
   robot.respond(/re?m(?:ove)? (.+)/i, function (msg) {
@@ -30,8 +31,10 @@ module.exports = function (robot) {
   robot.respond(/li?st?/i, function (msg) {
     listAgenda(robot, msg);
   });
-  robot.respond(/schedule/i, function (msg) {
-    schedule.addSchedule(msg);
+  robot.respond(/add schedule/i, function (msg) {
+    if (utils.checkError(schedule.addSchedule(robot, msg))) {
+      msg.send(err);
+    }
   });
   robot.brain.on('connected', initBrain);
   /**
@@ -69,7 +72,13 @@ function add(robot, msg) {
  */
 function rm(robot, msg) {
   let value = msg.match[1];
-  return msg.send(agenda.rm(robot, value));
+  if (!isNaN(value)) {
+    // Is a number
+    console.log('rm by id');
+    return msg.send(agenda.rmById(robot, value));
+  }
+  console.log('rm by name');
+  return msg.send(agenda.rmByName(robot, value));
 }
 
 /**
@@ -79,24 +88,5 @@ function rm(robot, msg) {
  * @param {Object}  msg    Incoming message
  */
 function listAgenda(robot, msg) {
-  let a = agenda.getAgenda(robot);
-  if (!a || _.isNull(a) || a.length < 1) return msg.send('Empty agenda');
-  console.log(a);
-  let niceAgenda = "";
-  for (let i=1; i < a.length+1; i++) {
-    niceAgenda += `${i}. ${a[i-1]}`;
-    if (i < a.length) {
-      niceAgenda+='\n';
-    }
-  }
-  let message = {
-    "attachments": [
-      {
-        "fallback": "Here is the agenda: " + a,
-        "pretext": "Here is the agenda:",
-        "text" : niceAgenda
-      }
-    ]
-  };
-  msg.send(message);
+  msg.send(agenda.getAgendaSlack(robot));
 }
