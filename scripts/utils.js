@@ -7,7 +7,8 @@
 // ================================================================================================
 module.exports = {
   checkError          : checkError,
-  checkUserSlackAdmin : checkUserSlackAdmin
+  checkUserSlackAdmin : checkUserSlackAdmin,
+  logMsgData          : logMsgData
 };
 
 function checkError(value) {
@@ -17,4 +18,14 @@ function checkError(value) {
 function checkUserSlackAdmin(msg) {
   let user = msg.message.user;
   return user.is_admin;
+}
+
+/**
+ * Log message info and extraData
+ *
+ * @param {Object}  msg         Incoming message
+ * @param {String}  extraData   Any extra data to log
+ */
+function logMsgData(msg, extraData) {
+  console.log(`${msg.message.user.name}: '${msg.message}' && ${extraData}`);
 }
