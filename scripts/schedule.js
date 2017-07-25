@@ -28,7 +28,8 @@ const ANNOUNCE_CHANNEL = '#part_system';
 // Module exports
 // ================================================================================================
 module.exports = {
-  addSchedule : addSchedule
+  addSchedule : addSchedule,
+  setSchedule : setSchedule
 };
 
 function addSchedule(robot, msg) {
@@ -43,6 +44,19 @@ function addSchedule(robot, msg) {
   console.log(`Schedule set for: ${nextDate}`);
   msg.send(`Schedule set for: ${nextDate}`);
   let j = schedule.scheduleJob(nextDate, function () {
+    console.log('Sending out scheduled agenda');
+    agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
+    addSchedule();
+  });
+}
+
+function setSchedule(robot, msg, date) {
+  if (!utils.checkUserSlackAdmin(msg)) {
+    return new Error('User does not have permission');
+  }
+  console.log(`Schedule set for: ${date}`);
+  msg.send(`Schedule set for: ${date}`);
+  let j = schedule.scheduleJob(date, function () {
     console.log('Sending out scheduled agenda');
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule();

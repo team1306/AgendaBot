@@ -22,7 +22,7 @@ const REDIS_BRAIN_KEY = "agenda";
 // ================================================================================================
 module.exports = function (robot) {
   robot.respond(/add (.+)/i, function (msg) {
-    console.dir(msg.message.user);
+    // console.dir(msg.message.user);
     add(robot, msg);
   });
   robot.respond(/re?m(?:ove)? (.+)/i, function (msg) {
@@ -36,7 +36,13 @@ module.exports = function (robot) {
       msg.send(err);
     }
   });
+  robot.respond(/set schedule (.+)/i, function (msg) {
+    if (utils.checkError(schedule.setSchedule(robot, msg, msg.match[1]))) {
+      msg.send(err);
+    }
+  });
   robot.brain.on('connected', initBrain);
+  robot.messageRoom('@sam', `Bot started: [${new Date()}]`);
   /**
    * Start the robot brain if it has not already been started
    *
@@ -59,7 +65,7 @@ module.exports = function (robot) {
  */
 function add(robot, msg) {
   let value = msg.match[1];
-  console.log(`Add: '${value}'`);
+  console.log(`ADD: '${value}'`);
   agenda.add(robot, value);
   return msg.send(`Added '${value}' to the agenda`);
 }
@@ -72,12 +78,15 @@ function add(robot, msg) {
  */
 function rm(robot, msg) {
   let value = msg.match[1];
+  // Check if our value is a number
   if (!isNaN(value)) {
-    // Is a number
-    console.log('rm by id');
+    // Need to remove one from our number to account for zero indexing
+    value--;
+    console.log(`RM ID: ${value}`);
+    if (value < 0) return msg.send(new Error(`Invalid input '${value}'`));
     return msg.send(agenda.rmById(robot, value));
   }
-  console.log('rm by name');
+  console.log(`RM NAME: ${value}`);
   return msg.send(agenda.rmByName(robot, value));
 }
 

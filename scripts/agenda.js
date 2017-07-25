@@ -32,7 +32,7 @@ function rmById(robot, value) {
     return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${value}.`);
   }
   removeBrainDataById(robot, value);
-  return `Removed '${value}' successfully`;
+  return `Removed #${value+1} successfully`;
 }
 
 function formatAgenda(agenda) {
@@ -76,10 +76,12 @@ function removeBrainDataByName(robot, name) {
   return setBrainData(robot, data);
 }
 function removeBrainDataById(robot, id) {
+  console.log(`removeBrainDataById - ID: ${id}`);
   let data = getBrainData(robot);
+  console.log(`indexof tes ${data.indexOf('tes')}`);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   data.splice(id, 1);
-  console.dir('Data: ' + data);
+  console.dir('DATA: ' + data);
   return setBrainData(robot, data);
 }
 
