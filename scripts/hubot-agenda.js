@@ -5,7 +5,10 @@
 //   hubot add <item> - Adds <item> to the agenda
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
 //   hubot li/list - List the agenda
-//   hubot schedule - Update the schedule
+//   hubot add schedule - Update the schedule
+//   hubot set schedule <date> - Set the schedule to a specific date
+//   hubot up/uptime - Get the bot's uptime
+//   hubot v/-v/version - get the bot's version
 
 // ================================================================================================
 // Module dependencies
@@ -17,6 +20,8 @@ const utils    = require('./utils');
 const schedule = require('./schedule');
 
 const REDIS_BRAIN_KEY = "agenda";
+// Notified on bot start. Can be users or channels (make sure to use @|#)
+const NOTIFY_GROUPS = ['@sam'];
 
 // ================================================================================================
 // Module exports
@@ -52,7 +57,9 @@ module.exports = function (robot) {
     msg.send(`I was started ${moment(startTime).fromNow()}`);
   });
   robot.brain.on('connected', initBrain);
-  robot.messageRoom('@sam', `Bot v${version} started @ ${startTime}`);
+  NOTIFY_GROUPS.forEach(function (user) {
+    robot.messageRoom(user, `Bot v${version} started @ ${startTime}`);
+  });
   console.log(`Bot v${version} started @ ${startTime}`);
   /**
    * Start the robot brain if it has not already been started
