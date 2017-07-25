@@ -28,7 +28,7 @@ module.exports = function (robot) {
   robot.respond(/re?m(?:ove)? (.+)/i, function (msg) {
     rm(robot, msg);
   });
-  robot.respond(/li?st?/i, function (msg) {
+  robot.respond(/l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
   });
   robot.respond(/add schedule/i, function (msg) {
