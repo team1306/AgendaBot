@@ -22,7 +22,7 @@ const ANNOUNCE_TIME_MIN = 15;
 const ANNOUNCE_SCHEDULE_DAYS = 7;
 const ANNOUNCE_DAY_OF_WEEK   = 2;
 
-const ANNOUNCE_CHANNEL = '#part_system';
+const ANNOUNCE_CHANNEL = '#announcements';
 
 // ================================================================================================
 // Module exports
