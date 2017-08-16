@@ -28,5 +28,6 @@ function checkUserSlackAdmin(msg) {
  * @param {String}  extraData   Any extra data to log
  */
 function logMsgData(msg, extraData) {
-  console.log(`${msg.message.user.name}: '${msg.message}' && ${extraData}`);
+  let now = new Date();
+  console.log(`[${now}] ${msg.message.user.name}: '${msg.message}' && ${extraData}`);
 }
