@@ -1,5 +1,5 @@
 // Description:
-//   Redeploys AkitaBox production apps
+//   Allows easy agenda making
 //
 // Commands:
 //   hubot add <item> - Adds <item> to the agenda
@@ -29,30 +29,29 @@ const NOTIFY_GROUPS = ['@sam'];
 module.exports = function (robot) {
   let version = require('../package.json').version;
   let startTime = new Date();
-  robot.respond(/add (.+)/i, function (msg) {
+  robot.respond(/(?:agenda )?add (.+)/i, function (msg) {
     add(robot, msg);
   });
-  robot.respond(/re?m(?:ove)? (.+)/i, function (msg) {
+  robot.respond(/(?:agenda )?re?m(?:ove)? (.+)/i, function (msg) {
     rm(robot, msg);
   });
-  robot.respond(/l[ist].*/i, function (msg) {
+  robot.respond(/(?:agenda )?l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
   });
-  robot.respond(/add schedule/i, function (msg) {
-    if (utils.checkError(schedule.addSchedule(robot, msg))) {
-      msg.send(err);
+  robot.respond(/(?:agenda )?set schedule/i, function (msg) {
+    console.log('setSched');
+    if (!utils.checkUserSlackAdmin(msg)) {
+      return msg.send(new Error('You do not have permission to preform this action'));
+    }
+    if (utils.checkError(schedule.addSchedule(robot, msg, msg.match[1]))) {
+      msg.send(new Error('An error occurred'));
     }
   });
-  robot.respond(/set schedule (.+)/i, function (msg) {
-    if (utils.checkError(schedule.setSchedule(robot, msg, msg.match[1]))) {
-      msg.send(err);
-    }
-  });
-  robot.respond(/-?v(?:ersion)?(?!.)/i, function (msg) {
+  robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
     msg.send(`AgendaBot v${version}`);
   });
-  robot.respond(/up?(?:time)?(?!.)/i, function (msg) {
+  robot.respond(/(?:agenda )?up?(?:time)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `UPTIME: ${moment(startTime).fromNow()}`);
     msg.send(`I was started ${moment(startTime).fromNow()}`);
   });

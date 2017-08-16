@@ -1,13 +1,6 @@
-// Description:
-//   Redeploys AkitaBox production apps
-//
-// Commands:
-//   hubot my slack id - responds with your Slack ID
-
 // ================================================================================================
 // Module dependencies
 // ================================================================================================
-const _        = require('underscore');
 const schedule = require('node-schedule');
 const agenda   = require('./agenda');
 const utils    = require('./utils');
@@ -18,9 +11,8 @@ const utils    = require('./utils');
 const ANNOUNCE_TIME_HR  = 6;
 const ANNOUNCE_TIME_MIN = 15;
 
-// Amount of days to wait before next announcement. 7 = weekly, 1 = daily etc.
-const ANNOUNCE_SCHEDULE_DAYS = 7;
-const ANNOUNCE_DAY_OF_WEEK   = 2;
+// Which day of week to announce the agenda
+const ANNOUNCE_DAY_OF_WEEK = 2;
 
 const ANNOUNCE_CHANNEL = '#announcements';
 
@@ -33,20 +25,16 @@ module.exports = {
 };
 
 function addSchedule(robot, msg) {
-  if (!utils.checkUserSlackAdmin(msg)) {
-    return new Error('User does not have permission');
-  }
   let today = new Date();
-  let nextDayOfWeek = getNextDayOfWeek(today, ANNOUNCE_DAY_OF_WEEK);
-  let nextDate = new Date(nextDayOfWeek.getFullYear(), nextDayOfWeek.getMonth(), nextDayOfWeek.getDate(), ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
-  //let nextDate = today.getTime() + 604800000;
-  nextDate.setDate(nextDate.getDate() + ANNOUNCE_SCHEDULE_DAYS);
-  console.log(`Schedule set for: ${nextDate}`);
-  msg.send(`Schedule set for: ${nextDate}`);
-  let j = schedule.scheduleJob(nextDate, function () {
+  let nextDate = getNextDate(today, ANNOUNCE_DAY_OF_WEEK);
+  let nextDateWithTime = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate(),
+    ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
+  console.log(`Schedule set for: ${nextDateWithTime}`);
+  msg.send(`Schedule set for: ${nextDateWithTime}`);
+  let j = schedule.scheduleJob(nextDateWithTime, function () {
     console.log('Sending out scheduled agenda');
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
-    addSchedule();
+    addSchedule(robot, msg);
   });
 }
 
@@ -63,11 +51,11 @@ function setSchedule(robot, msg, date) {
   });
 }
 
-function getNextDayOfWeek(date, dayOfWeek) {
-  let resultDate = new Date(date.getTime());
-  resultDate.setDate(date.getDate() + (dayOfWeek - date.getDay()) % 7);
-  if (date.getDate() === resultDate.getDate()) {
-    resultDate.setDate(resultDate.getDate() + 7);
+function getNextDate(today, dayOfWeek) {
+  let returnDate = new Date();
+  returnDate.setDate(today.getDate() + (dayOfWeek + 7 - today.getDay()) % 7);
+  if (today.getDate() === returnDate.getDate()) {
+    returnDate.setDate(today.getDate() + 7);
   }
-  return resultDate;
+  return returnDate;
 }
