@@ -4,9 +4,8 @@
 // Commands:
 //   hubot add <item> - Adds <item> to the agenda
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
-//   hubot li/list - List the agenda
-//   hubot add schedule - Update the schedule
-//   hubot set schedule <date> - Set the schedule to a specific date
+//   hubot li/ls/list - List the agenda
+//   hubot set schedule - Update the schedule
 //   hubot up/uptime - Get the bot's uptime
 //   hubot v/-v/version - get the bot's version
 
@@ -41,7 +40,7 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?set schedule/i, function (msg) {
     console.log('setSched');
     if (!utils.checkUserSlackAdmin(msg)) {
-      return msg.send(new Error('You do not have permission to preform this action'));
+      return msg.send(new Error('You do not have permission to perform this action'));
     }
     if (utils.checkError(schedule.addSchedule(robot, msg, msg.match[1]))) {
       msg.send(new Error('An error occurred'));
