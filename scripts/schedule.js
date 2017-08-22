@@ -8,7 +8,7 @@ const utils    = require('./utils');
 // 0, 0, 0, HR, MIN, SEC, MS
 
 // Time to announce the agenda
-const ANNOUNCE_TIME_HR  = 6;
+const ANNOUNCE_TIME_HR  = 18;
 const ANNOUNCE_TIME_MIN = 15;
 
 // Which day of week to announce the agenda
