@@ -4,6 +4,7 @@
 // Commands:
 //   hubot add <item> - Adds <item> to the agenda
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
+//   hubot update <id> <new text> - Updates <id> with <new text>
 //   hubot li/ls/list - List the agenda
 //   hubot set schedule - Update the schedule
 //   hubot up/uptime - Get the bot's uptime
@@ -37,14 +38,23 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
   });
+  robot.respond(/(?:agenda)?update (\d+) (.+)/i, function (msg) {
+    update(robot, msg);
+  });
   robot.respond(/(?:agenda )?set schedule/i, function (msg) {
-    console.log('setSched');
     if (!utils.checkUserSlackAdmin(msg)) {
       return msg.send(new Error('You do not have permission to perform this action'));
     }
     if (utils.checkError(schedule.addSchedule(robot, msg, msg.match[1]))) {
       msg.send(new Error('An error occurred'));
     }
+  });
+  robot.respond(/(?:agenda )?cancel schedule/i, function (msg) {
+    if (!utils.checkUserSlackAdmin(msg)) {
+      return msg.send(new Error('You do not have permission to perform this action'));
+    }
+    schedule.cancelSchedule();
+    return msg.send('Schedule canceled');
   });
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
@@ -54,6 +64,7 @@ module.exports = function (robot) {
     utils.logMsgData(msg, `UPTIME: ${moment(startTime).fromNow()}`);
     msg.send(`I was started ${moment(startTime).fromNow()}`);
   });
+
   robot.brain.on('connected', initBrain);
   NOTIFY_GROUPS.forEach(function (user) {
     robot.messageRoom(user, `Bot v${version} started @ ${startTime}`);
@@ -93,18 +104,18 @@ function add(robot, msg) {
  * @param {Object}  msg     Incoming message
  */
 function rm(robot, msg) {
-  let value = msg.match[1];
-  utils.logMsgData(msg, `RM: '${value}'`);
+  let id = msg.match[1];
+  utils.logMsgData(msg, `RM: '${id}'`);
   // Check if our value is a number
-  if (!isNaN(value)) {
+  if (!isNaN(id)) {
     // Need to remove one from our number to account for zero indexing
-    value--;
-    utils.logMsgData(msg, `RM (ID): '${value}'`);
-    if (value < 0) return msg.send(new Error(`Invalid input '${value}'`));
-    return msg.send(agenda.rmById(robot, value));
+    id--;
+    utils.logMsgData(msg, `RM (ID): '${id}'`);
+    if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
+    return msg.send(agenda.rmById(robot, id));
   }
-  utils.logMsgData(msg, `RM (NAME): '${value}'`);
-  return msg.send(agenda.rmByName(robot, value));
+  utils.logMsgData(msg, `RM (NAME): '${id}'`);
+  return msg.send(agenda.rmByName(robot, id));
 }
 
 /**
@@ -116,4 +127,23 @@ function rm(robot, msg) {
 function listAgenda(robot, msg) {
   utils.logMsgData(msg, 'LI');
   msg.send(agenda.getAgendaSlack(robot));
+}
+
+/**
+ * Update one of the agenda items
+ *
+ * @param  {Object} robot Hubot Object
+ * @param  {Object} msg   Incoming message
+ * @return {[type]}       [description]
+ */
+function update(robot, msg) {
+  let id = msg.match[1];
+  let value = msg.match[2];
+  utils.logMsgData(msg, `UPDATE '${id}' '${value}'`);
+  if (isNaN(id)) {
+    msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
+  }
+  id--;
+  if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
+  return msg.send(agenda.update(robot, id, value));
 }

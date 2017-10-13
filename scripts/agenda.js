@@ -10,6 +10,7 @@ module.exports = {
   add               : add,
   rmByName          : rmByName,
   rmById            : rmById,
+  update            : update,
   formatAgenda      : formatAgenda,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
@@ -26,13 +27,22 @@ function rmByName(robot, value) {
  removeBrainDataByName(robot, value);
  return `Removed '${value}' successfully`;
 }
-function rmById(robot, value) {
-  if (value > getAgendaLength(robot)) {
-    console.log(new Error(`Value '${value} is out of bounds of ${getAgendaLength(robot)}`));
-    return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${value}.`);
+function rmById(robot, id) {
+  if (id > getAgendaLength(robot)) {
+    console.log(new Error(`Value '${id} is out of bounds of ${getAgendaLength(robot)}`));
+    return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${id}.`);
   }
-  removeBrainDataById(robot, value);
+  removeBrainDataById(robot, id);
   return `Removed #${value+1} successfully`;
+}
+
+function update(robot, id, value) {
+  if (id > getAgendaLength(robot)) {
+    console.log(new Error(`Value '${id} is out of bounds of ${getAgendaLength(robot)}`));
+    return new Error(`There are only ${getAgendaLength(robot)}. But you tried to update item #${id}.`);
+  }
+  updateBrainData(robot, id, value);
+  return `Updated #${id+1} successfully.`;
 }
 
 function formatAgenda(agenda) {
@@ -61,7 +71,12 @@ function addBrainData(robot, newData) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   data.push(newData);
-  console.dir('Data: ' + data);
+  return setBrainData(robot, data);
+}
+function updateBrainData(robot, id, newData) {
+  let data = getBrainData(robot);
+  if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
+  data[id] = newData;
   return setBrainData(robot, data);
 }
 function removeBrainDataByName(robot, name) {

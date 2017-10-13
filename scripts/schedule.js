@@ -20,9 +20,12 @@ const ANNOUNCE_CHANNEL = '#announcements';
 // Module exports
 // ================================================================================================
 module.exports = {
-  addSchedule : addSchedule,
-  setSchedule : setSchedule
+  addSchedule    : addSchedule,
+  setSchedule    : setSchedule,
+  cancelSchedule : cancelSchedule
 };
+
+let currentScheule;
 
 function addSchedule(robot, msg) {
   let today = new Date();
@@ -44,11 +47,15 @@ function setSchedule(robot, msg, date) {
   }
   console.log(`Schedule set for: ${date}`);
   msg.send(`Schedule set for: ${date}`);
-  let j = schedule.scheduleJob(date, function () {
+  currentSchedule = schedule.scheduleJob(date, function () {
     console.log('Sending out scheduled agenda');
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule();
   });
+}
+
+function cancelSchedule() {
+  currentSchedule.cancel();
 }
 
 function getNextDate(today, dayOfWeek) {
