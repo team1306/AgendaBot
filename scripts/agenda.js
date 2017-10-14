@@ -33,7 +33,7 @@ function rmById(robot, id) {
     return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${id}.`);
   }
   removeBrainDataById(robot, id);
-  return `Removed #${value+1} successfully`;
+  return `Removed #${id+1} successfully`;
 }
 
 function update(robot, id, value) {
