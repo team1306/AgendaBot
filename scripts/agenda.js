@@ -43,8 +43,8 @@ function update(robot, id, value) {
     console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
     return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id}.`);
   }
-  updateBrainData(robot, id, value);
-  return `Updated #${id+1} successfully.`;
+  updateBrainData(robot, id-1, value);
+  return `Updated #${id} successfully.`;
 }
 
 function formatAgenda(agenda) {
