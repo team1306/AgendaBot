@@ -29,12 +29,13 @@ function rmByName(robot, value) {
  return `Removed '${value}' successfully`;
 }
 function rmById(robot, id) {
+  id++;
   if (id > getAgendaLength(robot)) {
     console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
     return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${id}.`);
   }
-  removeBrainDataById(robot, id);
-  return `Removed #${id+1} successfully`;
+  removeBrainDataById(robot, id-1);
+  return `Removed #${id} successfully`;
 }
 
 function update(robot, id, value) {
