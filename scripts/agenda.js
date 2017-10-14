@@ -30,7 +30,7 @@ function rmByName(robot, value) {
 }
 function rmById(robot, id) {
   if (id > getAgendaLength(robot)) {
-    console.log(new Error(`Value '${id} is out of bounds of ${getAgendaLength(robot)}`));
+    console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
     return new Error(`There are only ${getAgendaLength(robot)}. But you tried to remove item #${id}.`);
   }
   removeBrainDataById(robot, id);
