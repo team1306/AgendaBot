@@ -38,7 +38,7 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
   });
-  robot.respond(/(?:agenda)?update (\d+) (.+)/i, function (msg) {
+  robot.respond(/(?:agenda )?update (\d+) (.+)/i, function (msg) {
     update(robot, msg);
   });
   robot.respond(/(?:agenda )?set schedule/i, function (msg) {
@@ -93,8 +93,8 @@ module.exports = function (robot) {
 function add(robot, msg) {
   let value = msg.match[1];
   utils.logMsgData(msg, `ADD: '${value}'`);
-  agenda.add(robot, value);
-  return msg.send(`Added '${value}' to the agenda`);
+  return msg.send(agenda.add(robot, value));
+  // return msg.send(`Added '${value}' to the agenda`);
 }
 
 /**
@@ -112,10 +112,10 @@ function rm(robot, msg) {
     id--;
     utils.logMsgData(msg, `RM (ID): '${id}'`);
     if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
-    return msg.send(agenda.rmById(robot, id));
+    return msg.send(agenda.rmById(robot, id).toString());
   }
   utils.logMsgData(msg, `RM (NAME): '${id}'`);
-  return msg.send(agenda.rmByName(robot, id));
+  return msg.send(agenda.rmByName(robot, id).toString());
 }
 
 /**
@@ -145,5 +145,6 @@ function update(robot, msg) {
   }
   id--;
   if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
-  return msg.send(agenda.update(robot, id, value));
+  // Use toString to convert error messages
+  return msg.send(agenda.update(robot, id, value).toString());
 }

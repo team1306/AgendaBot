@@ -19,6 +19,7 @@ module.exports = {
 
 function add(robot, value) {
   addBrainData(robot, value);
+  return `Added '${value}' to the agenda`;
 }
 function rmByName(robot, value) {
  if (!getBrainData(robot).includes(value)) {
@@ -37,9 +38,10 @@ function rmById(robot, id) {
 }
 
 function update(robot, id, value) {
+  id++;
   if (id > getAgendaLength(robot)) {
-    console.log(new Error(`Value '${id} is out of bounds of ${getAgendaLength(robot)}`));
-    return new Error(`There are only ${getAgendaLength(robot)}. But you tried to update item #${id}.`);
+    console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
+    return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id}.`);
   }
   updateBrainData(robot, id, value);
   return `Updated #${id+1} successfully.`;
