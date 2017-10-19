@@ -45,7 +45,7 @@ module.exports = function (robot) {
     if (!utils.checkUserSlackAdmin(msg)) {
       return msg.send(new Error('You do not have permission to perform this action'));
     }
-    if (utils.checkError(schedule.addSchedule(robot, msg, msg.match[1]))) {
+    if (utils.checkError(schedule.addSchedule(robot))) {
       msg.send(new Error('An error occurred'));
     }
   });
@@ -80,6 +80,11 @@ module.exports = function (robot) {
     if (!robot.brain.get(REDIS_BRAIN_KEY)) {
       console.log('NO PREV DATA');
       robot.brain.set(REDIS_BRAIN_KEY, []);
+    }
+    if (utils.checkError(schedule.addSchedule(robot))) {
+      NOTIFY_GROUPS.forEach(function (user) {
+        robot.messageRoom(user, new Error('Unable to set schedule at startup!'));
+      });
     }
   }
 };

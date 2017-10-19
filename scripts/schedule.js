@@ -27,17 +27,15 @@ module.exports = {
 
 let currentScheule;
 
-function addSchedule(robot, msg) {
+function addSchedule(robot) {
   let today = new Date();
   let nextDate = getNextDate(today, ANNOUNCE_DAY_OF_WEEK);
   let nextDateWithTime = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate(),
     ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
-  console.log(`Schedule set for: ${nextDateWithTime}`);
-  msg.send(`Schedule set for: ${nextDateWithTime}`);
   let j = schedule.scheduleJob(nextDateWithTime, function () {
     console.log('Sending out scheduled agenda');
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
-    addSchedule(robot, msg);
+    addSchedule(robot);
   });
 }
 
