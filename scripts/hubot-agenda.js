@@ -8,7 +8,9 @@
 //   hubot li/ls/list - List the agenda
 //   hubot set schedule - Update the schedule
 //   hubot up/uptime - Get the bot's uptime
-//   hubot v/-v/version - get the bot's version
+//   hubot v/-v/version - Get the bot's version
+//
+//   Found a bug or want a new feature? https://github.com/samr28/hubot-agenda/issues
 
 // ================================================================================================
 // Module dependencies
@@ -38,24 +40,14 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
   });
+
   robot.respond(/(?:agenda )?update (\d+) (.+)/i, function (msg) {
     update(robot, msg);
   });
-  robot.respond(/(?:agenda )?set schedule/i, function (msg) {
-    if (!utils.checkUserSlackAdmin(msg)) {
-      return msg.send(new Error('You do not have permission to perform this action'));
-    }
-    if (utils.checkError(schedule.addSchedule(robot))) {
-      msg.send(new Error('An error occurred'));
-    }
+  robot.respond(/(?:agenda )?assign (\d+) (.+)/i, function (msg) {
+    assign(robot, msg);
   });
-  robot.respond(/(?:agenda )?cancel schedule/i, function (msg) {
-    if (!utils.checkUserSlackAdmin(msg)) {
-      return msg.send(new Error('You do not have permission to perform this action'));
-    }
-    schedule.cancelSchedule();
-    return msg.send('Schedule canceled');
-  });
+
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
     msg.send(`AgendaBot v${version}`);
@@ -99,7 +91,6 @@ function add(robot, msg) {
   let value = msg.match[1];
   utils.logMsgData(msg, `ADD: '${value}'`);
   return msg.send(agenda.add(robot, value));
-  // return msg.send(`Added '${value}' to the agenda`);
 }
 
 /**
@@ -146,10 +137,29 @@ function update(robot, msg) {
   let value = msg.match[2];
   utils.logMsgData(msg, `UPDATE '${id}' '${value}'`);
   if (isNaN(id)) {
-    msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
+    return msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
   }
   id--;
-  if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
+  if (id < 0) {
+    return msg.send(new Error(`Invalid input '${id+1}'`));
+  }
   // Use toString to convert error messages
   return msg.send(agenda.update(robot, id, value).toString());
+}
+
+function assign(robot, msg) {
+  let id = msg.match[1];
+  let assignee = msg.match[2];
+  utils.logMsgData(msg, `ASSIGN #${id} TO '${assignee}'`);
+  if (isNaN(id)) {
+    return msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
+  }
+  id--;
+  if (id < 0) {
+    return msg.send(new Error(`Invalid input '${id+1}'`));
+  }
+  if (!_.isString(assignee)) {
+      return msg.send(`I didn't understand '${assignee}'. Type 'agenda help' for help`);
+  }
+  return msg.send(agenda.assign(robot, id, assignee).toString());
 }

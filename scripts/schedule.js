@@ -33,7 +33,7 @@ function addSchedule(robot) {
   let nextDateWithTime = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate(),
     ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
   let j = schedule.scheduleJob(nextDateWithTime, function () {
-    console.log('Sending out scheduled agenda');
+    console.log('Sending out scheduled agenda @ ' + new Date());
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule(robot);
   });

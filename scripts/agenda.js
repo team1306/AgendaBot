@@ -1,8 +1,12 @@
 // ================================================================================================
 // Module dependencies
 // ================================================================================================
-const _ = require('underscore');
+const _               = require('underscore');
+const uuidV4          = require('uuid/v4');
+const utils           = require('./utils');
 const REDIS_BRAIN_KEY = "agenda";
+
+const DEFAULT_ATTACHMENT_COLOR = "secondary";
 // ================================================================================================
 // Module exports
 // ================================================================================================
@@ -11,20 +15,39 @@ module.exports = {
   rmByName          : rmByName,
   rmById            : rmById,
   update            : update,
+  assign            : assign,
   formatAgenda      : formatAgenda,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
   listAgendaChannel : listAgendaChannel
 };
 
+// item = {id : int, value : String, important : bool, child : idOfOtherItem}
+//
+// TODO rm will show successful if you remove something that doesn't exist
+// ex: rm 1 on empty list will show success message
+//
+// TODO add error checking for all of these like in add
+
 function add(robot, value) {
-  addBrainData(robot, value);
+  let item = {
+    id        : uuidV4(),
+    num       : getAgendaLength(robot),
+    value     : value,
+    color     : DEFAULT_ATTACHMENT_COLOR,
+    moreInfo  : '',
+    assignee  : '',
+    important : false,
+    child     : null
+  };
+  console.dir(item);
+  let resp = addBrainData(robot, item);
+  if (utils.checkError(resp)) {
+    return resp;
+  }
   return `Added '${value}' to the agenda`;
 }
 function rmByName(robot, value) {
- if (!getBrainData(robot).includes(value)) {
-   return new Error(`'${value}' is not on the agenda.`);
- }
  removeBrainDataByName(robot, value);
  return `Removed '${value}' successfully`;
 }
@@ -39,13 +62,17 @@ function rmById(robot, id) {
 }
 
 function update(robot, id, value) {
-  id++;
   if (id > getAgendaLength(robot)) {
     console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
-    return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id}.`);
+    return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id-1}.`);
   }
-  updateBrainData(robot, id-1, value);
-  return `Updated #${id} successfully.`;
+  updateBrainData(robot, id, value);
+  return `Updated #${id-1} successfully.`;
+}
+
+function assign(robot, id, assignee) {
+  getAgenda(robot)[id].assignee = assignee;
+  return `Successfully assigned #${id+1} to ${assignee}`;
 }
 
 function formatAgenda(agenda) {
@@ -54,7 +81,9 @@ function formatAgenda(agenda) {
 }
 
 function getAgenda(robot) {
-  if (!getBrainData(robot) || _.isNull(getBrainData(robot))) return new Error('Empty agenda');
+  if (getBrainData(robot).length < 1) {
+    return new Error('Empty agenda');
+  }
   return getBrainData(robot);
 }
 function getAgendaLength(robot) {
@@ -62,7 +91,11 @@ function getAgendaLength(robot) {
 }
 
 function getBrainData(robot) {
-  return robot.brain.get(REDIS_BRAIN_KEY);
+  let brainData = robot.brain.get(REDIS_BRAIN_KEY);
+  if (!brainData || _.isNull(brainData) || !_.isArray(brainData)) {
+    return new Error('Invalid data from Redis brain.');
+  }
+  return brainData;
 }
 function setBrainData(robot, value) {
   return robot.brain.set(REDIS_BRAIN_KEY, value);
@@ -85,12 +118,17 @@ function updateBrainData(robot, id, newData) {
 function removeBrainDataByName(robot, name) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
-  if (data.indexOf(name) > -1) {
-    data.splice(data.indexOf(name), 1);
-  } else {
-    return new Error(`${name} is not currently on the agenda.`)
+  let found = -1;
+  for (let i=0; i < data.length; i++) {
+    if (data[i].value === name) {
+      found = i;
+    }
   }
-  console.dir('Data: ' + data);
+  if (found === -1) {
+    return new Error(`${name} is not currently on the agendaa.`);
+  }
+  data.splice(found, 1);
+  console.dir(data);
   return setBrainData(robot, data);
 }
 function removeBrainDataById(robot, id) {
@@ -98,7 +136,6 @@ function removeBrainDataById(robot, id) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   data.splice(id, 1);
-  console.dir('DATA: ' + data);
   return setBrainData(robot, data);
 }
 
@@ -107,15 +144,49 @@ function listAgendaChannel(robot, channel) {
 }
 function getAgendaSlack(robot) {
   let a = getAgenda(robot);
-  if (!a || _.isNull(a) || a.length < 1) return 'Empty agenda';
-  console.log('Get agenda:' + a);
+  if (utils.checkError(a)) return a;
   let niceAgenda = "";
-  for (let i=1; i < a.length+1; i++) {
-    niceAgenda += `${i}. ${a[i-1]}`;
-    if (i < a.length) {
-      niceAgenda+='\n';
+  let attachments = [];
+  let fields = [];
+  for (let i=0; i < a.length; i++) {
+    // niceAgenda += `${i}. ${a[i-1]}`;
+    // if (i < a.length) {
+    //   niceAgenda+='\n';
+    // }
+
+
+    let item = a[i];
+    if (!_.isEmpty(item.moreInfo)) {
+      fields.push({
+        "title": "More info",
+        "value": item.moreInfo,
+        "short": false
+      });
     }
+    if (!_.isEmpty(item.assignee)) {
+      fields.push({
+        "title": "Assignee",
+        "value": item.assignee,
+        "short": true
+      });
+    }
+    attachments[i] = {
+      "fallback": `${i+1}. ${item.value}`,
+      "text": `${i+1}. ${item.value}`,
+      "fields": fields,
+      "color": item.color
+    };
   }
+  console.dir({
+    "attachments": attachments
+  });
+  console.dir({
+    "fields": fields
+  });
+  return {
+    "attachments": attachments
+  };
+
   return {
     "attachments": [
       {
