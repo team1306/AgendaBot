@@ -16,6 +16,7 @@ module.exports = {
   rmById            : rmById,
   update            : update,
   assign            : assign,
+  unassign          : unAssign,
   formatAgenda      : formatAgenda,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
@@ -73,6 +74,14 @@ function update(robot, id, value) {
 function assign(robot, id, assignee) {
   getAgenda(robot)[id].assignee = assignee;
   return `Successfully assigned #${id+1} to ${assignee}`;
+}
+
+function unAssign(robot, id) {
+  if (getAgenda(robot)[id].assignee.length == 0) {
+    return `Item #${id+1} is not assigned.`;
+  }
+  getAgenda(robot)[id].assignee = '';
+  return `Successfully unassigned #${id+1}`;
 }
 
 function formatAgenda(agenda) {

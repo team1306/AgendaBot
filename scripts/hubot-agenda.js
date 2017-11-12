@@ -47,6 +47,9 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?assign (\d+) (.+)/i, function (msg) {
     assign(robot, msg);
   });
+  robot.respond(/(?:agenda )?unassign (\d+)/i, function (msg) {
+    unassign(robot, msg);
+  });
 
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
@@ -162,4 +165,17 @@ function assign(robot, msg) {
       return msg.send(`I didn't understand '${assignee}'. Type 'agenda help' for help`);
   }
   return msg.send(agenda.assign(robot, id, assignee).toString());
+}
+
+function unassign(robot, msg) {
+  let id = msg.match[1];
+  utils.logMsgData(msg, `UNASSIGN #${id}`);
+  if (isNaN(id)) {
+    return msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
+  }
+  id--;
+  if (id < 0) {
+    return msg.send(new Error(`Invalid input '${id+1}'`));
+  }
+  return msg.send(agenda.unassign(robot, id).toString());
 }
