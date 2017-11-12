@@ -4,3 +4,4 @@ node_modules
 bin/hubotslack
 .idea/
 package-lock.json
+.ftpconfig
