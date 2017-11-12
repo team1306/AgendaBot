@@ -5,6 +5,9 @@
 //   hubot add <item> - Adds <item> to the agenda
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
 //   hubot update <id> <new text> - Updates <id> with <new text>
+//   hubot assign <id> <assignee> - Assign an item to <assignee>
+//   hubot unassign <id> - Unassign an item
+//   hubot set importance <id> <level> - Set the importance/color of an item. <level> = 'high', 'medium', 'low', or 'default'.
 //   hubot li/ls/list - List the agenda
 //   hubot set schedule - Update the schedule
 //   hubot up/uptime - Get the bot's uptime
@@ -49,6 +52,9 @@ module.exports = function (robot) {
   });
   robot.respond(/(?:agenda )?unassign (\d+)/i, function (msg) {
     unassign(robot, msg);
+  });
+  robot.respond(/(?:agenda )?set importance (\d+) (\w+)/i, function (msg) {
+    importance(robot, msg);
   });
 
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
@@ -131,9 +137,8 @@ function listAgenda(robot, msg) {
 /**
  * Update one of the agenda items
  *
- * @param  {Object} robot Hubot Object
+ * @param  {Object} robot Hubot object
  * @param  {Object} msg   Incoming message
- * @return {[type]}       [description]
  */
 function update(robot, msg) {
   let id = msg.match[1];
@@ -150,6 +155,12 @@ function update(robot, msg) {
   return msg.send(agenda.update(robot, id, value).toString());
 }
 
+/**
+ * Set the assignee of an item
+ *
+ * @param  {Object} robot Hubot object
+ * @param  {Object} msg   Incoming message
+ */
 function assign(robot, msg) {
   let id = msg.match[1];
   let assignee = msg.match[2];
@@ -166,7 +177,12 @@ function assign(robot, msg) {
   }
   return msg.send(agenda.assign(robot, id, assignee).toString());
 }
-
+/**
+ * Resets the assignee of an item
+ *
+ * @param  {Object} robot Hubot object
+ * @param  {Object} msg   Incoming message
+ */
 function unassign(robot, msg) {
   let id = msg.match[1];
   utils.logMsgData(msg, `UNASSIGN #${id}`);
@@ -178,4 +194,23 @@ function unassign(robot, msg) {
     return msg.send(new Error(`Invalid input '${id+1}'`));
   }
   return msg.send(agenda.unassign(robot, id).toString());
+}
+/**
+ * Set the importance/color of an item
+ *
+ * @param  {Object} robot Hubot object
+ * @param  {Object} msg   Incoming message
+ */
+function importance(robot, msg) {
+  let id = msg.match[1];
+  let importance = msg.match[2];
+  let validInput = ["high", "default", "medium", "low"];
+  utils.logMsgData(msg, `SET IMPORTANCE #${id} ${importance}`);
+  if (isNaN(id)) {
+    return msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
+  }
+  if (!_.contains(validInput, importance)) {
+    return msg.send(`I didn't understand '${importance}'. Use 'high', 'medium', or 'low'`);
+  }
+  return msg.send(agenda.setImportance(robot, id, importance).toString());
 }

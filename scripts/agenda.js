@@ -17,6 +17,7 @@ module.exports = {
   update            : update,
   assign            : assign,
   unassign          : unAssign,
+  setImportance     : setImportance,
   formatAgenda      : formatAgenda,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
@@ -75,13 +76,26 @@ function assign(robot, id, assignee) {
   getAgenda(robot)[id].assignee = assignee;
   return `Successfully assigned #${id+1} to ${assignee}`;
 }
-
 function unAssign(robot, id) {
   if (getAgenda(robot)[id].assignee.length == 0) {
     return `Item #${id+1} is not assigned.`;
   }
   getAgenda(robot)[id].assignee = '';
   return `Successfully unassigned #${id+1}`;
+}
+function setImportance(robot, id, importance) {
+  let color = '';
+  if (importance === 'high') {
+    color = 'danger';
+  } else if (importance === 'medium') {
+    color = 'warning';
+  } else if (importance === 'low') {
+    color = 'good';
+  } else {
+    color = DEFAULT_ATTACHMENT_COLOR;
+  }
+  getAgenda(robot)[id-1].color = color;
+  return `Set item #${id} importance to ${importance}`;
 }
 
 function formatAgenda(agenda) {

@@ -28,7 +28,13 @@ function buildHtml(cb) {
   body += '<div class="container">';
 
   for (var i = 1; i <= data.length; i++) {
-    body += '<div class="alert alert-' + data[i-1].color + ' alert-dismissible fade show" role="alert">';
+    let color;
+    if (data[i-1].color === 'good') {
+      color = 'success';
+    } else {
+      color = data[i-1].color;
+    }
+    body += '<div class="alert alert-' + color + ' alert-dismissible fade show" role="alert">';
     body += i + '. ' + data[i-1].value + '<br>';
     body += '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
     body += '</div>';
