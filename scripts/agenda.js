@@ -147,23 +147,17 @@ function getAgendaSlack(robot) {
   if (utils.checkError(a)) return a;
   let niceAgenda = "";
   let attachments = [];
-  let fields = [];
   for (let i=0; i < a.length; i++) {
-    // niceAgenda += `${i}. ${a[i-1]}`;
-    // if (i < a.length) {
-    //   niceAgenda+='\n';
-    // }
-
-
     let item = a[i];
-    if (!_.isEmpty(item.moreInfo)) {
+    let fields = [];
+    if (item.moreInfo.length != 0) {
       fields.push({
         "title": "More info",
         "value": item.moreInfo,
         "short": false
       });
     }
-    if (!_.isEmpty(item.assignee)) {
+    if (item.assignee.length != 0) {
       fields.push({
         "title": "Assignee",
         "value": item.assignee,
@@ -177,12 +171,6 @@ function getAgendaSlack(robot) {
       "color": item.color
     };
   }
-  console.dir({
-    "attachments": attachments
-  });
-  console.dir({
-    "fields": fields
-  });
   return {
     "attachments": attachments
   };
