@@ -26,11 +26,13 @@ module.exports = {
 
 // item = {id : int, value : String, important : bool, child : idOfOtherItem}
 //
-// TODO rm will show successful if you remove something that doesn't exist
-// ex: rm 1 on empty list will show success message
-//
 // TODO add error checking for all of these like in add
 
+/**
+ * Add an item to the agenda
+ * @param {Object} robot Hubot Object
+ * @param {String} value The value of the item to add
+ */
 function add(robot, value) {
   let item = {
     id        : uuidV4(),
@@ -42,19 +44,34 @@ function add(robot, value) {
     important : false,
     child     : null
   };
-  console.dir(item);
   let resp = addBrainData(robot, item);
   if (utils.checkError(resp)) {
     return resp;
   }
   return `Added '${value}' to the agenda`;
 }
+
+/**
+ * Remove an item by value/name
+ * @param  {Object} robot Hubot Object
+ * @param  {String} value Value of the item to remove
+ */
 function rmByName(robot, value) {
  removeBrainDataByName(robot, value);
  return `Removed '${value}' successfully`;
 }
+
+/**
+ * Remove an item by id/number
+ * @param  {Object} robot Hubot Object
+ * @param  {Number} value ID of the item to remove
+ */
 function rmById(robot, id) {
   id++;
+  if (getAgendaLength(robot) == 0) {
+    console.log(new Error(`Tried to remove '${id}' but the agenda has no items!`));
+    return new Error(`Tried to remove '${id}' but the agenda has no items!`);
+  }
   if (id > getAgendaLength(robot)) {
     console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
     return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to remove item #${id}.`);
@@ -63,6 +80,12 @@ function rmById(robot, id) {
   return `Removed #${id} successfully`;
 }
 
+/**
+ * Change the value of an item
+ * @param  {Object} robot Hubot object
+ * @param  {number} id    ID of the item to modify
+ * @param  {String} value What to change the value to
+ */
 function update(robot, id, value) {
   if (id > getAgendaLength(robot)) {
     console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
@@ -72,10 +95,22 @@ function update(robot, id, value) {
   return `Updated #${id-1} successfully.`;
 }
 
+/**
+ * Assign an item
+ * @param  {Object} robot    Hubot object
+ * @param  {number} id       Item ID
+ * @param  {String} assignee User to assign to
+ */
 function assign(robot, id, assignee) {
   getAgenda(robot)[id].assignee = assignee;
   return `Successfully assigned #${id+1} to ${assignee}`;
 }
+
+/**
+ * Reset the assignee field for an item
+ * @param  {Object} robot Hubot object
+ * @param  {number} id    Item ID
+ */
 function unAssign(robot, id) {
   if (getAgenda(robot)[id].assignee.length == 0) {
     return `Item #${id+1} is not assigned.`;
@@ -83,6 +118,13 @@ function unAssign(robot, id) {
   getAgenda(robot)[id].assignee = '';
   return `Successfully unassigned #${id+1}`;
 }
+
+/**
+ * Set the importance of an item
+ * @param {Object} robot      Hubot object
+ * @param {number} id         Item ID
+ * @param {String} importance Importance level (high, medium, low, default)
+ */
 function setImportance(robot, id, importance) {
   let color = '';
   if (importance === 'high') {
@@ -196,15 +238,5 @@ function getAgendaSlack(robot) {
   }
   return {
     "attachments": attachments
-  };
-
-  return {
-    "attachments": [
-      {
-        "fallback": "Here is the agenda: " + a,
-        "pretext": "Here is the agenda:",
-        "text" : niceAgenda
-      }
-    ]
   };
 }
