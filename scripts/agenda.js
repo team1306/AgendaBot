@@ -215,14 +215,14 @@ function getAgendaSlack(robot) {
   for (let i=0; i < a.length; i++) {
     let item = a[i];
     let fields = [];
-    if (item.moreInfo.length != 0) {
+    if (item.moreInfo && item.moreInfo.length != 0) {
       fields.push({
         "title": "More info",
         "value": item.moreInfo,
         "short": false
       });
     }
-    if (item.assignee.length != 0) {
+    if (item.assignee && item.assignee.length != 0) {
       fields.push({
         "title": "Assignee",
         "value": item.assignee,
