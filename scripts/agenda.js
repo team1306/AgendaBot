@@ -94,7 +94,7 @@ function update(robot, id, value) {
   let oldData = getBrainData(robot)[id];
   oldData.value = value;
   updateBrainData(robot, id, oldData);
-  return `Updated #${id-1} successfully.`;
+  return `Updated #${id+1} successfully.`;
 }
 
 /**
