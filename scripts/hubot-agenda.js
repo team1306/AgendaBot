@@ -27,7 +27,7 @@ const schedule = require('./schedule');
 const REDIS_BRAIN_KEY = "agenda";
 // Notified on bot start. Can be users or channels (make sure to use @|#)
 const NOTIFY_GROUPS = ['@sam'];
-const SCHEDULE = TRUE;
+const SCHEDULE = true;
 
 // ================================================================================================
 // Module exports
