@@ -35,6 +35,8 @@ const SCHEDULE = true;
 module.exports = function (robot) {
   let version = require('../package.json').version;
   let startTime = new Date();
+
+  // Basic commands
   robot.respond(/(?:agenda )?add (.+)/i, function (msg) {
     add(robot, msg);
   });
@@ -45,6 +47,7 @@ module.exports = function (robot) {
     listAgenda(robot, msg);
   });
 
+  // Advanced commands
   robot.respond(/(?:agenda )?update (\d+) (.+)/i, function (msg) {
     update(robot, msg);
   });
@@ -57,7 +60,11 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?set importance (\d+) (\w+)/i, function (msg) {
     importance(robot, msg);
   });
+  robot.respond(/(?:agenda )?set priority (\d+) (\w+)/i, function (msg) {
+    importance(robot, msg);
+  });
 
+  // Debug/info commands
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
     msg.send(`AgendaBot v${version}`);
@@ -74,7 +81,6 @@ module.exports = function (robot) {
   console.log(`Bot v${version} started @ ${startTime}`);
   /**
    * Start the robot brain if it has not already been started
-   *
    * @param  {Object} robot  Hubot object
    */
   function initBrain() {
@@ -95,7 +101,6 @@ module.exports = function (robot) {
 
 /**
  * Add something to the agenda
- *
  * @param {Object}  robot   Hubot object
  * @param {Object}  msg     Incoming message
  */
@@ -107,7 +112,6 @@ function add(robot, msg) {
 
 /**
  * Remove something from the agenda
- *
  * @param {Object}  robot   Hubot object
  * @param {Object}  msg     Incoming message
  */
@@ -128,7 +132,6 @@ function rm(robot, msg) {
 
 /**
  * Send a message with the agenda
- *
  * @param {Object}  robot  Hubot object
  * @param {Object}  msg    Incoming message
  */
@@ -139,7 +142,6 @@ function listAgenda(robot, msg) {
 
 /**
  * Update one of the agenda items
- *
  * @param  {Object} robot Hubot object
  * @param  {Object} msg   Incoming message
  */
@@ -160,7 +162,6 @@ function update(robot, msg) {
 
 /**
  * Set the assignee of an item
- *
  * @param  {Object} robot Hubot object
  * @param  {Object} msg   Incoming message
  */
@@ -182,7 +183,6 @@ function assign(robot, msg) {
 }
 /**
  * Resets the assignee of an item
- *
  * @param  {Object} robot Hubot object
  * @param  {Object} msg   Incoming message
  */
@@ -200,7 +200,6 @@ function unassign(robot, msg) {
 }
 /**
  * Set the importance/color of an item
- *
  * @param  {Object} robot Hubot object
  * @param  {Object} msg   Incoming message
  */

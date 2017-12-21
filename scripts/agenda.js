@@ -18,7 +18,6 @@ module.exports = {
   assign            : assign,
   unassign          : unAssign,
   setImportance     : setImportance,
-  formatAgenda      : formatAgenda,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
   listAgendaChannel : listAgendaChannel
@@ -142,21 +141,31 @@ function setImportance(robot, id, importance) {
   return `Set item #${id} importance to ${importance}`;
 }
 
-function formatAgenda(agenda) {
-  if (!agenda || _.isNull(agenda)) return new Error('Empty agenda');
-  return { attachments : [{ text : agenda.sort().join('\n') }] };
-}
-
+/**
+ * Get the agenda from Redis
+ * @param  {Object} robot Hubot object
+ * @return {Object}       Agenda
+ */
 function getAgenda(robot) {
   if (getBrainData(robot).length < 1) {
     return new Error('Empty agenda');
   }
   return getBrainData(robot);
 }
+/**
+ * Get the number of items/length of the agenda
+ * @param  {Object} robot Hubot object
+ * @return {number}       Number of items in the agenda
+ */
 function getAgendaLength(robot) {
   return getAgenda(robot).length;
 }
 
+/**
+ * Get the data stored in the redis brain
+ * @param  {Object} robot Hubot object
+ * @return {Object}       Brain data
+ */
 function getBrainData(robot) {
   let brainData = robot.brain.get(REDIS_BRAIN_KEY);
   if (!brainData || _.isNull(brainData) || !_.isArray(brainData)) {
@@ -164,24 +173,47 @@ function getBrainData(robot) {
   }
   return brainData;
 }
+
+/**
+ * Set the brain data
+ * @param {Object} robot Hubot object
+ * @param {Object} value Brain data
+ */
 function setBrainData(robot, value) {
   return robot.brain.set(REDIS_BRAIN_KEY, value);
 }
-function clearBrainData(robot) {
-  return robot.brain.set(REDIS_BRAIN_KEY, []);
-}
+
+/**
+ * Add an item to the redis brain
+ * @param {Object} robot   Hubot object
+ * @param {Object} newData New item
+ */
 function addBrainData(robot, newData) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   data.push(newData);
   return setBrainData(robot, data);
 }
+
+/**
+ * Update an entry in the brain
+ * @param  {Object} robot   Hubot object
+ * @param  {number} id      Item id
+ * @param  {Object} newData New object to replace the item with
+ */
 function updateBrainData(robot, id, newData) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   data[id] = newData;
   return setBrainData(robot, data);
 }
+
+/**
+ * Remove an item by name
+ * @param  {Object} robot Hubot object
+ * @param  {String} name  Name of the item to remove
+ * @return {Error}        If an error occurred
+ */
 function removeBrainDataByName(robot, name) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
@@ -198,6 +230,13 @@ function removeBrainDataByName(robot, name) {
   console.dir(data);
   return setBrainData(robot, data);
 }
+
+/**
+ * Remove an item by id
+ * @param  {Object} robot Hubot Object
+ * @param  {number} id    Id of the item to remove
+ * @return {Error}        If an error occurred
+ */
 function removeBrainDataById(robot, id) {
   console.log(`removeBrainDataById - ID: ${id}`);
   let data = getBrainData(robot);
@@ -206,9 +245,20 @@ function removeBrainDataById(robot, id) {
   return setBrainData(robot, data);
 }
 
+/**
+ * List the agenda in a certain channel
+ * @param  {Object} robot   Hubot object
+ * @param  {String} channel Channel name
+ */
 function listAgendaChannel(robot, channel) {
   robot.messageRoom(channel, getAgendaSlack(robot));
 }
+
+/**
+ * Get the agenda and format it as a json payload for Slack
+ * @param  {Object} robot Hubot object
+ * @return {Object}       Agenda formatted as attachments
+ */
 function getAgendaSlack(robot) {
   let a = getAgenda(robot);
   if (utils.checkError(a)) return a;
