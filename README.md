@@ -52,7 +52,7 @@ AgendaBot is a chat bot built on the [Hubot][hubot] framework.
 
 You can start AgendaBot locally by running:
 
-    % bin/hubot -n agenda
+    % bin/hubot
 
 You'll see some start up output and a prompt:
 
