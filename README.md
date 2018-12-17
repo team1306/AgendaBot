@@ -17,23 +17,49 @@ AgendaBot is a chat bot built on the [Hubot][hubot] framework.
 
 *For the most up to date list of commands, please use `agenda help`.*
 
-### Running hubot-agenda Locally
+### Running as a Slackbot on Linux
 
-You can test your hubot by running the following, however some plugins will not
-behave as expected unless the [environment variables](#configuration) they rely
-upon have been set.
+  First go to your Slack workspace and add app. Search for "bots" and install the official bots app. Name it "agenda" and save.
 
-You can start hubot-agenda locally by running:
+  Install coffeescript on your server with:
+  ```bash
+  npm install coffeescript -g
+  ```
 
+  Next, create the following file inside of the `bin` directory.
 
-    % bin/hubot -n agenda   # -n <name> flag ensures that the name of the bot is 'agenda'
+  `bin/hubotslack`:
+  ```bash
+  #!/bin/bash
+
+  export HUBOT_SLACK_TOKEN=xoxb-YOUR_TOKEN_HERE
+
+  npm install
+
+  forever start -l /home/SOMEWHERE/agendabot.log -a -c coffee node_modules/.bin/hubot --adapter slack --name agenda
+
+  # Uncomment the line below to turn on the web view
+  # forever start -l /home/SOMEWHERE/agendabot-web.log -a -c node web.js
+  ```
+
+  Replace `xoxb-YOUR_TOKEN_HERE` with the token from Slack.
+  Replace `SOMEWHERE` with a path to your log file (if you don't know what to put here, create a directory: `/home/user/logs` and store it there)
+
+  Make it executable (`chmod +x bin/hubotslack`)
+  And run it: `bin/hubotslack`
+
+### Running Locally
+
+You can start AgendaBot locally by running:
+
+    % bin/hubot -n agenda
 
 You'll see some start up output and a prompt:
 
     [Sat Feb 28 2015 12:38:27 GMT+0000 (GMT)] INFO Using default redis on localhost:6379
     agenda>
 
-Then you can interact with hubot-agenda by typing `agenda help`.
+Then you can interact with AgendaBot by typing `agenda help`.
 
     agenda> agenda help
     agenda adapter - Reply with the adapter
@@ -49,43 +75,9 @@ Then you can interact with hubot-agenda by typing `agenda help`.
 
 ### Configuration
 
-A few scripts (including some installed by default) require environment
-variables to be set as a simple form of configuration.
-
-AgendaBot only requires that you set `HUBOT_SLACK_TOKEN` to the token given to you from Slack.
+AgendaBot only requires that you set `HUBOT_SLACK_TOKEN` env var to the token given to you from Slack.
 
 How to set environment variables will be specific to your operating system.
 Rather than recreate the various methods and best practices in achieving this,
 it's suggested that you search for a dedicated guide focused on your OS.
 
-## Adapters
-
-Adapters are the interface to the service you want your hubot to run on, such
-as Campfire or IRC. There are a number of third party adapters that the
-community have contributed. Check [Hubot Adapters][hubot-adapters] for the
-available ones.
-
-If you would like to run a non-Campfire or shell adapter you will need to add
-the adapter package as a dependency to the `package.json` file in the
-`dependencies` section.
-
-Once you've added the dependency with `npm install --save` to install it you
-can then run hubot with the adapter.
-
-    % bin/hubot -a <adapter>
-
-Where `<adapter>` is the name of your adapter without the `hubot-` prefix.
-
-I cannot guarantee that AgendaBot will work with every adapter but it will work with the Slack
-adapter for sure!
-
-[hubot-adapters]: https://github.com/github/hubot/blob/master/docs/adapters.md
-
-### Deploying to UNIX or Windows
-
-If you would like to deploy to either a UNIX operating system or Windows.
-Please check out the [deploying hubot onto UNIX][deploy-unix] and [deploying
-hubot onto Windows][deploy-windows] wiki pages.
-
-[deploy-unix]: https://github.com/github/hubot/blob/master/docs/deploying/unix.md
-[deploy-windows]: https://github.com/github/hubot/blob/master/docs/deploying/windows.md
