@@ -231,7 +231,7 @@ function removeBrainDataByName(robot, name) {
     }
   }
   if (found === -1) {
-    return new Error(`${name} is not currently on the agendaa.`);
+    return new Error(`${name} is not currently on the agenda.`);
   }
   data.splice(found, 1);
   console.dir(data);
