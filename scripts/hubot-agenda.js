@@ -24,15 +24,13 @@ const l        = require('@samr28/log');
 const agenda   = require('./agenda');
 const utils    = require('./utils');
 const schedule = require('./schedule');
+const config   = require('../config');
 
 l.on();
 l.setColors({
   redis: "blue"
 });
 const REDIS_BRAIN_KEY = "agenda";
-// Notified on bot start. Can be users or channels (make sure to use @|#)
-const NOTIFY_GROUPS = ['@sam'];
-const SCHEDULE = true;
 
 // ================================================================================================
 // Module exports
@@ -80,7 +78,7 @@ module.exports = function (robot) {
   });
 
   robot.brain.on('connected', initBrain);
-  NOTIFY_GROUPS.forEach(function (user) {
+  config.NOTIFY_GROUPS.forEach(function (user) {
     robot.messageRoom(user, `Bot v${version} started @ ${startTime}`);
   });
   l.log(`Bot v${version} started @ ${startTime}`, "info");
@@ -94,9 +92,9 @@ module.exports = function (robot) {
       l.log('NO PREV DATA', "redis");
       robot.brain.set(REDIS_BRAIN_KEY, []);
     }
-    if (SCHEDULE) {
+    if (config.SCHEDULE) {
       if (utils.checkError(schedule.addSchedule(robot))) {
-        NOTIFY_GROUPS.forEach(function (user) {
+        config.NOTIFY_GROUPS.forEach(function (user) {
           robot.messageRoom(user, new Error('Unable to set schedule at startup!'));
         });
       }
