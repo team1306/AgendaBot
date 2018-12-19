@@ -155,7 +155,7 @@ function setImportance(robot, id, importance) {
  */
 function getAgenda(robot) {
   if (getBrainData(robot).length < 1) {
-    return new Error('Empty agenda');
+    return [];
   }
   return getBrainData(robot);
 }
