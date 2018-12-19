@@ -2,6 +2,9 @@
 // Module dependencies
 // ================================================================================================
 
+const l = require('@samr28/log');
+l.on();
+
 // ================================================================================================
 // Module exports
 // ================================================================================================
@@ -37,6 +40,5 @@ function checkUserSlackAdmin(msg) {
  * @param {String}  extraData   Any extra data to log
  */
 function logMsgData(msg, extraData) {
-  let now = new Date();
-  console.log(`[${now}] ${msg.message.user.name}: '${msg.message}' && ${extraData}`);
+  l.log(`${msg.message.user.name}: '${msg.message}' && ${extraData}`);
 }

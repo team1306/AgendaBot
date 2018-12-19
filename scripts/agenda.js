@@ -4,6 +4,13 @@
 const _               = require('underscore');
 const uuidV4          = require('uuid/v4');
 const utils           = require('./utils');
+const l               = require('@samr28/log');
+l.on();
+
+l.setColors({
+  usererror: "yellow"
+});
+
 const REDIS_BRAIN_KEY = "agenda";
 
 const DEFAULT_ATTACHMENT_COLOR = "secondary";
@@ -68,11 +75,11 @@ function rmByName(robot, value) {
 function rmById(robot, id) {
   id++;
   if (getAgendaLength(robot) == 0) {
-    console.log(new Error(`Tried to remove '${id}' but the agenda has no items!`));
+    l.log(new Error(`Tried to remove '${id}' but the agenda has no items!`), "usererror");
     return new Error(`Tried to remove '${id}' but the agenda has no items!`);
   }
   if (id > getAgendaLength(robot)) {
-    console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
+    l.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`), "usererror");
     return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to remove item #${id}.`);
   }
   removeBrainDataById(robot, id-1);
@@ -87,7 +94,7 @@ function rmById(robot, id) {
  */
 function update(robot, id, value) {
   if (id > getAgendaLength(robot)) {
-    console.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`));
+    l.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`), "usererror");
     return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id-1}.`);
   }
   let oldData = getBrainData(robot)[id];
@@ -238,9 +245,11 @@ function removeBrainDataByName(robot, name) {
  * @return {Error}        If an error occurred
  */
 function removeBrainDataById(robot, id) {
-  console.log(`removeBrainDataById - ID: ${id}`);
   let data = getBrainData(robot);
-  if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
+  if (!data || !_.isArray(data)) {
+    l.log('Data from Redis brain is not valid!', "error");
+    return new Error('Data from Redis brain is not valid!');
+  }
   data.splice(id, 1);
   return setBrainData(robot, data);
 }

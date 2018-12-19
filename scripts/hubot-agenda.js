@@ -20,10 +20,15 @@
 // ================================================================================================
 const _        = require('underscore');
 const moment   = require('moment');
+const l        = require('@samr28/log');
 const agenda   = require('./agenda');
 const utils    = require('./utils');
 const schedule = require('./schedule');
 
+l.on();
+l.setColors({
+  redis: "blue"
+});
 const REDIS_BRAIN_KEY = "agenda";
 // Notified on bot start. Can be users or channels (make sure to use @|#)
 const NOTIFY_GROUPS = ['@sam'];
@@ -78,15 +83,15 @@ module.exports = function (robot) {
   NOTIFY_GROUPS.forEach(function (user) {
     robot.messageRoom(user, `Bot v${version} started @ ${startTime}`);
   });
-  console.log(`Bot v${version} started @ ${startTime}`);
+  l.log(`Bot v${version} started @ ${startTime}`, "info");
   /**
    * Start the robot brain if it has not already been started
    * @param  {Object} robot  Hubot object
    */
   function initBrain() {
-    console.log(`LOADED DATA: ${robot.brain.get(REDIS_BRAIN_KEY)}`);
+    l.log(`LOADED DATA: ${robot.brain.get(REDIS_BRAIN_KEY)}`, "redis");
     if (!robot.brain.get(REDIS_BRAIN_KEY)) {
-      console.log('NO PREV DATA');
+      l.log('NO PREV DATA', "redis");
       robot.brain.set(REDIS_BRAIN_KEY, []);
     }
     if (SCHEDULE) {

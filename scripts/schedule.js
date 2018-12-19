@@ -4,6 +4,11 @@
 const schedule = require('node-schedule');
 const agenda   = require('./agenda');
 const utils    = require('./utils');
+const l        = require('@samr28/log');
+l.on();
+l.setColors({
+  schedule: "green"
+});
 
 // 0, 0, 0, HR, MIN, SEC, MS
 
@@ -33,7 +38,7 @@ function addSchedule(robot) {
   let nextDateWithTime = new Date(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate(),
     ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
   let j = schedule.scheduleJob(nextDateWithTime, function () {
-    console.log('Sending out scheduled agenda @ ' + new Date());
+    l.log('Sending out scheduled agenda', "schedule");
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule(robot);
   });
@@ -43,10 +48,10 @@ function setSchedule(robot, msg, date) {
   if (!utils.checkUserSlackAdmin(msg)) {
     return new Error('User does not have permission');
   }
-  console.log(`Schedule set for: ${date}`);
+  l.log(`Schedule set for: ${date}`, "schedule");
   msg.send(`Schedule set for: ${date}`);
   currentSchedule = schedule.scheduleJob(date, function () {
-    console.log('Sending out scheduled agenda');
+    l.log('Sending out scheduled agenda', "schedule");
     agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
     addSchedule();
   });

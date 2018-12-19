@@ -1,7 +1,12 @@
-var redis = require('redis');
-var client = redis.createClient();
-var http = require('http');
-var async = require('async');
+var redis   = require('redis');
+var client  = redis.createClient();
+var http    = require('http');
+var async   = require('async');
+var l       = require('@samr28/log');
+l.on();
+l.setColors({
+  web: "magenta"
+});
 
 var data;
 var agenda;
@@ -68,13 +73,13 @@ function getData(cb) {
 
 
 client.on('connect', function() {
-    console.log('Web Connected to Redis!');
+    l.log('Connected to Redis!', "web");
 });
 
 client.exists('hubot:storage', function(err, reply) {
     if (reply === 1) {
-        console.log('Found Data');
+        l.log('Found Data', "web");
     } else {
-        console.log('No Data Found');
+        l.log('No Data Found', "web");
     }
 });

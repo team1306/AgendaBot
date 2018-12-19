@@ -5,6 +5,7 @@
   "author": "samr28 <samroq@yahoo.com>",
   "description": "Easily make meeting agendas",
   "dependencies": {
+    "@samr28/log": "^1.0.0",
     "async": "^2.6.0",
     "hubot": "^3.1.1",
     "hubot-diagnostics": "0.0.2",
