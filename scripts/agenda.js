@@ -27,7 +27,8 @@ module.exports = {
   setImportance     : setImportance,
   getAgenda         : getAgenda,
   getAgendaSlack    : getAgendaSlack,
-  listAgendaChannel : listAgendaChannel
+  listAgendaChannel : listAgendaChannel,
+  clear             : clear
 };
 
 // item = {id : int, value : String, important : bool, child : idOfOtherItem}
@@ -300,4 +301,16 @@ function getAgendaSlack(robot) {
   return {
     "attachments": attachments
   };
+}
+
+/**
+ * Clear the agenda
+ * @param   {Object}  robot  Hubot object
+ */
+function clear(robot) {
+  let res = setBrainData(robot, []);
+  if(utils.checkError(res)) {
+    return res;
+  }
+  return "Cleared the agenda";
 }

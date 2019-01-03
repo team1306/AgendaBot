@@ -4,6 +4,7 @@
 // Commands:
 //   hubot add <item> - Adds <item> to the agenda
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
+//   hubot clear - Clear the agenda
 //   hubot update <id> <new text> - Updates <id> with <new text>
 //   hubot assign <id> <assignee> - Assign an item to <assignee>
 //   hubot unassign <id> - Unassign an item
@@ -48,6 +49,9 @@ module.exports = function (robot) {
   });
   robot.respond(/(?:agenda )?l[ist].*/i, function (msg) {
     listAgenda(robot, msg);
+  });
+  robot.respond(/(?:agenda )?clear/i, function (msg) {
+    clearAgenda(robot, msg);
   });
 
   // Advanced commands
@@ -141,6 +145,17 @@ function rm(robot, msg) {
 function listAgenda(robot, msg) {
   utils.logMsgData(msg, 'LI');
   msg.send(agenda.getAgendaSlack(robot));
+}
+
+/**
+ * Clear the agenda
+ *
+ * @param   {Object}  robot  Hubot object
+ * @param   {Object}  msg    Incoming message
+ */
+function clearAgenda(robot, msg) {
+  utils.logMsgData(msg, `CLEAR`);
+  return msg.send(agenda.clear(robot));
 }
 
 /**
