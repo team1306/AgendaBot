@@ -7,7 +7,7 @@
 //   hubot clear - Clear the agenda
 //   hubot update <id> <new text> - Updates <id> with <new text>
 //   hubot assign <id> <assignee> - Assign an item to <assignee>
-//   hubot unassign <id> - Unassign an item
+//   hubot unassign <id> <assignee> - Unassign an item. An assignee of 'a' or 'all' removes all assignees.
 //   hubot set importance <id> <level> - Set the importance/color of an item. <level> = 'high', 'medium', 'low', or 'default'.
 //   hubot li/ls/list - List the agenda
 //   hubot set schedule - Update the schedule
@@ -61,7 +61,7 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?assign (\d+) (.+)/i, function (msg) {
     assign(robot, msg);
   });
-  robot.respond(/(?:agenda )?unassign (\d+)/i, function (msg) {
+  robot.respond(/(?:agenda )?unassign (\d+) (.+)/i, function (msg) {
     unassign(robot, msg);
   });
   robot.respond(/(?:agenda )?set importance (\d+) (\w+)/i, function (msg) {
@@ -195,7 +195,7 @@ function assign(robot, msg) {
     return msg.send(new Error(`Invalid input '${id+1}'`));
   }
   if (!_.isString(assignee)) {
-      return msg.send(`I didn't understand '${assignee}'. Type 'agenda help' for help`);
+    return msg.send(`I didn't understand '${assignee}'. Type 'agenda help' for help`);
   }
   return msg.send(agenda.assign(robot, id, assignee).toString());
 }
@@ -206,6 +206,8 @@ function assign(robot, msg) {
  */
 function unassign(robot, msg) {
   let id = msg.match[1];
+  let assignee = msg.match[2];
+  console.log(assignee);
   utils.logMsgData(msg, `UNASSIGN #${id}`);
   if (isNaN(id)) {
     return msg.send(`I didn't understand '${id}'. Type 'agenda help' for help`);
@@ -214,7 +216,7 @@ function unassign(robot, msg) {
   if (id < 0) {
     return msg.send(new Error(`Invalid input '${id+1}'`));
   }
-  return msg.send(agenda.unassign(robot, id).toString());
+  return msg.send(agenda.unassign(robot, id, assignee).toString());
 }
 /**
  * Set the importance/color of an item

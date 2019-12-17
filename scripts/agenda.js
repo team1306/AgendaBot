@@ -1,10 +1,10 @@
 // ================================================================================================
 // Module dependencies
 // ================================================================================================
-const _               = require('underscore');
-const uuidV4          = require('uuid/v4');
-const utils           = require('./utils');
-const l               = require('@samr28/log');
+const _ = require('underscore');
+const uuidV4 = require('uuid/v4');
+const utils = require('./utils');
+const l = require('@samr28/log');
 l.on();
 
 l.setColors({
@@ -18,17 +18,17 @@ const DEFAULT_ATTACHMENT_COLOR = "secondary";
 // Module exports
 // ================================================================================================
 module.exports = {
-  add               : add,
-  rmByName          : rmByName,
-  rmById            : rmById,
-  update            : update,
-  assign            : assign,
-  unassign          : unAssign,
-  setImportance     : setImportance,
-  getAgenda         : getAgenda,
-  getAgendaSlack    : getAgendaSlack,
-  listAgendaChannel : listAgendaChannel,
-  clear             : clear
+  add: add,
+  rmByName: rmByName,
+  rmById: rmById,
+  update: update,
+  assign: assign,
+  unassign: unAssign,
+  setImportance: setImportance,
+  getAgenda: getAgenda,
+  getAgendaSlack: getAgendaSlack,
+  listAgendaChannel: listAgendaChannel,
+  clear: clear
 };
 
 // item = {id : int, value : String, important : bool, child : idOfOtherItem}
@@ -42,14 +42,14 @@ module.exports = {
  */
 function add(robot, value) {
   let item = {
-    id        : uuidV4(),
-    num       : getAgendaLength(robot),
-    value     : value,
-    color     : DEFAULT_ATTACHMENT_COLOR,
-    moreInfo  : '',
-    assignee  : '',
-    important : false,
-    child     : null
+    id: uuidV4(),
+    num: getAgendaLength(robot),
+    value: value,
+    color: DEFAULT_ATTACHMENT_COLOR,
+    moreInfo: '',
+    assignee: '',
+    important: false,
+    child: null
   };
   let resp = addBrainData(robot, item);
   if (utils.checkError(resp)) {
@@ -64,8 +64,8 @@ function add(robot, value) {
  * @param  {String} value Value of the item to remove
  */
 function rmByName(robot, value) {
- removeBrainDataByName(robot, value);
- return `Removed '${value}' successfully`;
+  removeBrainDataByName(robot, value);
+  return `Removed '${value}' successfully`;
 }
 
 /**
@@ -83,7 +83,7 @@ function rmById(robot, id) {
     l.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`), "usererror");
     return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to remove item #${id}.`);
   }
-  removeBrainDataById(robot, id-1);
+  removeBrainDataById(robot, id - 1);
   return `Removed #${id} successfully`;
 }
 
@@ -96,12 +96,12 @@ function rmById(robot, id) {
 function update(robot, id, value) {
   if (id > getAgendaLength(robot)) {
     l.log(new Error(`Value '${id}' is out of bounds of ${getAgendaLength(robot)}`), "usererror");
-    return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id-1}.`);
+    return new Error(`There are only ${getAgendaLength(robot)} items. But you tried to update item #${id - 1}.`);
   }
   let oldData = getBrainData(robot)[id];
   oldData.value = value;
   updateBrainData(robot, id, oldData);
-  return `Updated #${id+1} successfully.`;
+  return `Updated #${id + 1} successfully.`;
 }
 
 /**
@@ -111,8 +111,14 @@ function update(robot, id, value) {
  * @param  {String} assignee User to assign to
  */
 function assign(robot, id, assignee) {
-  getAgenda(robot)[id].assignee = assignee;
-  return `Successfully assigned #${id+1} to ${assignee}`;
+  var assignees = getAgenda(robot)[id].assignee;
+  if (assignees.split(" ").includes(assignee)) {
+    return `${assignee} already assigned to this task.`;
+  }
+  assignees = (assignees + " " + assignee).trim();
+
+  getAgenda(robot)[id].assignee = assignees;
+  return `Successfully assigned #${id + 1} to ${assignee}. Total assigned: ${assignees}`;
 }
 
 /**
@@ -120,12 +126,23 @@ function assign(robot, id, assignee) {
  * @param  {Object} robot Hubot object
  * @param  {number} id    Item ID
  */
-function unAssign(robot, id) {
+function unAssign(robot, id, assignee) {
   if (getAgenda(robot)[id].assignee.length == 0) {
-    return `Item #${id+1} is not assigned.`;
+    return `Item #${id + 1} is not assigned.`;
   }
-  getAgenda(robot)[id].assignee = '';
-  return `Successfully unassigned #${id+1}`;
+  if (/^\a(ll)?$/.test(assignee)) {
+    //unassign all 
+    getAgenda(robot)[id].assignee = '';
+    return `Successfully unassigned all from #${id + 1}`;
+  }
+  var assignees = getAgenda(robot)[id].assignee;
+  var assigneeIndex = assignees.indexOf(assignee);
+  if (assigneeIndex > -1) {
+    getAgenda(robot)[id].assignee = (assignees.substring(0, assigneeIndex) +
+      assignees.substring(assigneeIndex + assignee.length, assignees.length)).replace("  ", " ");
+    return `Successfully unassigned "${assignee}" from #${id + 1}. Still assigned: ${getAgenda(robot)[id].assignee}`;
+  }
+  return `${assignee} not assigned to #${id + 1}`;
 }
 
 /**
@@ -145,7 +162,7 @@ function setImportance(robot, id, importance) {
   } else {
     color = DEFAULT_ATTACHMENT_COLOR;
   }
-  getAgenda(robot)[id-1].color = color;
+  getAgenda(robot)[id - 1].color = color;
   return `Set item #${id} importance to ${importance}`;
 }
 
@@ -226,7 +243,7 @@ function removeBrainDataByName(robot, name) {
   let data = getBrainData(robot);
   if (!data || !_.isArray(data)) return new Error('Data from Redis brain is not valid!');
   let found = -1;
-  for (let i=0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     if (data[i].value === name) {
       found = i;
     }
@@ -274,7 +291,7 @@ function getAgendaSlack(robot) {
   if (utils.checkError(a)) return a;
   let niceAgenda = "";
   let attachments = [];
-  for (let i=0; i < a.length; i++) {
+  for (let i = 0; i < a.length; i++) {
     let item = a[i];
     let fields = [];
     if (item.moreInfo && item.moreInfo.length != 0) {
@@ -292,8 +309,8 @@ function getAgendaSlack(robot) {
       });
     }
     attachments[i] = {
-      "fallback": `${i+1}. ${item.value}`,
-      "text": `${i+1}. ${item.value}`,
+      "fallback": `${i + 1}. ${item.value}`,
+      "text": `${i + 1}. ${item.value}`,
       "fields": fields,
       "color": item.color
     };
@@ -309,7 +326,7 @@ function getAgendaSlack(robot) {
  */
 function clear(robot) {
   let res = setBrainData(robot, []);
-  if(utils.checkError(res)) {
+  if (utils.checkError(res)) {
     return res;
   }
   return "Cleared the agenda";
