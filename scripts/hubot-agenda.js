@@ -8,6 +8,7 @@
 //   hubot update <id> <new text> - Updates <id> with <new text>
 //   hubot assign <id> <assignee> - Assign an item to <assignee>
 //   hubot unassign <id> <assignee> - Unassign an item. An assignee of 'a' or 'all' removes all assignees.
+//   hubot set due <id> <mm> <dd> - Set a due date to the item. mm is an integer 1 - 12 representing the month, and dd is a number 1-31 for the day.
 //   hubot set importance <id> <level> - Set the importance/color of an item. <level> = 'high', 'medium', 'low', or 'default'.
 //   hubot li/ls/list - List the agenda
 //   hubot set schedule - Update the schedule
@@ -70,7 +71,9 @@ module.exports = function (robot) {
   robot.respond(/(?:agenda )?set priority (\d+) (\w+)/i, function (msg) {
     importance(robot, msg);
   });
-
+  robot.respond(/(?:agenda )?set due (\d+) (\d\d?)[ \\\/](\d\d?)/, function (msg) {
+    due(robot, msg);
+  })
   // Debug/info commands
   robot.respond(/(?:agenda )?-?v(?:ersion)?(?!.)/i, function (msg) {
     utils.logMsgData(msg, `v${version}`);
@@ -130,7 +133,7 @@ function rm(robot, msg) {
     // Need to remove one from our number to account for zero indexing
     id--;
     utils.logMsgData(msg, `RM (ID): '${id}'`);
-    if (id < 0) return msg.send(new Error(`Invalid input '${id+1}'`));
+    if (id < 0) return msg.send(new Error(`Invalid input '${id + 1}'`));
     return msg.send(agenda.rmById(robot, id).toString());
   }
   utils.logMsgData(msg, `RM (NAME): '${id}'`);
@@ -172,7 +175,7 @@ function update(robot, msg) {
   }
   id--;
   if (id < 0) {
-    return msg.send(new Error(`Invalid input '${id+1}'`));
+    return msg.send(new Error(`Invalid input '${id + 1}'`));
   }
   // Use toString to convert error messages
   return msg.send(agenda.update(robot, id, value).toString());
@@ -192,7 +195,7 @@ function assign(robot, msg) {
   }
   id--;
   if (id < 0) {
-    return msg.send(new Error(`Invalid input '${id+1}'`));
+    return msg.send(new Error(`Invalid input '${id + 1}'`));
   }
   if (!_.isString(assignee)) {
     return msg.send(`I didn't understand '${assignee}'. Type 'agenda help' for help`);
@@ -214,7 +217,7 @@ function unassign(robot, msg) {
   }
   id--;
   if (id < 0) {
-    return msg.send(new Error(`Invalid input '${id+1}'`));
+    return msg.send(new Error(`Invalid input '${id + 1}'`));
   }
   return msg.send(agenda.unassign(robot, id, assignee).toString());
 }
@@ -235,4 +238,25 @@ function importance(robot, msg) {
     return msg.send(`I didn't understand '${importance}'. Use 'high', 'medium', or 'low'`);
   }
   return msg.send(agenda.setImportance(robot, id, importance).toString());
+}
+/**
+ * Set the duedate of an item
+ * @param  {Object} robot Hubot object
+ * @param  {Object} msg   Incoming message
+ */
+function due(robot, msg) {
+  let id = msg.match[1];
+  let month = msg.match[2];
+  let day = msg.match[3];
+  utils.logMsgData(msg, `SET DUEDATE #${id} TO MNTH ${month} AND DAY ${day}`);
+  if (id < 1 || isNaN(id) ||id>agenda.getAgenda(robot).length) {
+    return msg.send(`I didn't understand id '${id}'. Type 'agenda help' for help`);
+  }
+  if (month < 1 || month > 12 || isNaN(month)) {
+    return msg.send(`I didn't understand month '${month}'. Type 'agenda help' for help`);
+  }
+  if (day < 1 || day > 31 || isNaN(day)) {
+    return `I didn't understand day '${day}'. Type 'agenda help' for help`;
+  }
+  return msg.send(agenda.setDue(robot, id-1, month, day));
 }

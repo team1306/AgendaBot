@@ -28,7 +28,8 @@ module.exports = {
   getAgenda: getAgenda,
   getAgendaSlack: getAgendaSlack,
   listAgendaChannel: listAgendaChannel,
-  clear: clear
+  clear: clear,
+  setDue: setDue
 };
 
 // item = {id : int, value : String, important : bool, child : idOfOtherItem}
@@ -166,6 +167,11 @@ function setImportance(robot, id, importance) {
   return `Set item #${id} importance to ${importance}`;
 }
 
+function setDue(robot, id, month, day) {
+  getAgenda(robot)[id].dueDate = { month: month, day: day };
+  return `Set item #${id+1} due date to ${month}/${day}`;
+}
+
 /**
  * Get the agenda from Redis
  * @param  {Object} robot Hubot object
@@ -272,6 +278,8 @@ function removeBrainDataById(robot, id) {
   return setBrainData(robot, data);
 }
 
+
+
 /**
  * List the agenda in a certain channel
  * @param  {Object} robot   Hubot object
@@ -300,6 +308,12 @@ function getAgendaSlack(robot) {
         "value": item.moreInfo,
         "short": false
       });
+    }
+    if(item.dueDate){
+      fields.push({
+        "title": `Due: ${item.dueDate.month}/${item.dueDate.day}`,
+        "short":true
+      })
     }
     if (item.assignee && item.assignee.length != 0) {
       fields.push({
