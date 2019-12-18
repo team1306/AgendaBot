@@ -3,6 +3,7 @@ var client  = redis.createClient();
 var http    = require('http');
 var async   = require('async');
 var l       = require('@samr28/log');
+const config= require("./config");
 l.on();
 l.setColors({
   web: "magenta"
@@ -40,7 +41,14 @@ function buildHtml(cb) {
       color = data[i-1].color;
     }
     body += '<div class="alert alert-' + color + ' alert-dismissible fade show" role="alert">';
-    body += i + '. ' + data[i-1].value + '<br>';
+    if(config.DISPLAY_INDEX){
+    body +=i + '. '; 
+    }
+    body += data[i-1].value;
+    if(config.DISPLAY_DUE&&data[i-1].dueDate){
+      body+="<span class='text-right float-right' style='margin-right:2rem'>DUE: "+data[i-1].dueDate.month+"/"+data[i-1].dueDate.day+"</span>";
+    }
+    body+=  '<br>';
     body += '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
     body += '</div>';
   }
