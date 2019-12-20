@@ -40,19 +40,22 @@ function buildHtml(cb) {
     } else {
       color = data[i-1].color;
     }
-    body += '<div class="alert alert-' + color + ' alert-dismissible fade show" role="alert">';
+    body += '<div class="alert alert-' + color + ' alert-dismissible fade show" role="alert" style="overflow:auto;">';
     if(config.DISPLAY_INDEX){
-    body +=i + '. '; 
+      body += i + '. ';
     }
-    body += data[i-1].value;
-    if(config.DISPLAY_DUE&&data[i-1].dueDate){
-      body+="<span class='text-right float-right' style='margin-right:2rem'>DUE: "+data[i-1].dueDate.month+"/"+data[i-1].dueDate.day+"</span>";
+    body += data[i - 1].value;
+    if (config.DISPLAY_DUE && data[i - 1].dueDate) {
+      body += "<span class='text-right float-right' style='margin-right:2rem'>DUE: " + data[i - 1].dueDate.month + "/" + data[i - 1].dueDate.day + "</span>";
+      body += '<br>';
     }
-    body+=  '<br>';
+    if (config.DISPLAY_ASSIGNED && data[i - 1].assignee) {
+      body += "<span class='text-right float-right' style='margin-right:2rem'>Assigned: " + data[i - 1].assignee + "</span>";
+    }
     body += '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
     body += '</div>';
   }
-
+  body += "<p style='margin-top:1em;'> New Business?</p>";
   body += '</div>';
 
   body += `<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -81,13 +84,13 @@ function getData(cb) {
 
 
 client.on('connect', function() {
-    l.log('Connected to Redis!', "web");
+  l.log('Connected to Redis!', "web");
 });
 
 client.exists('hubot:storage', function(err, reply) {
-    if (reply === 1) {
-        l.log('Found Data', "web");
-    } else {
-        l.log('No Data Found', "web");
-    }
+  if (reply === 1) {
+    l.log('Found Data', "web");
+  } else {
+    l.log('No Data Found', "web");
+  }
 });

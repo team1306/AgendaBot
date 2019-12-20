@@ -13,5 +13,5 @@ module.exports = {
   //Website
   DISPLAY_INDEX: true,        //Whether to show the index of an item
   DISPLAY_DUE: true,         //Whether to show the due date of an item
-  DISPLAY_ASSIGNED: false   //Whether to show the names of people assigned under an item
+  DISPLAY_ASSIGNED: true   //Whether to show the names of people assigned under an item
 }
