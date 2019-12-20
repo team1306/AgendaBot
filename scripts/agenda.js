@@ -5,8 +5,10 @@ const _ = require('underscore');
 const uuidV4 = require('uuid/v4');
 const utils = require('./utils');
 const l = require('@samr28/log');
-l.on();
+const schedule = require("./schedule");
+const config = require("../config");
 
+l.on();
 l.setColors({
   usererror: "yellow"
 });
@@ -29,7 +31,8 @@ module.exports = {
   getAgendaSlack: getAgendaSlack,
   listAgendaChannel: listAgendaChannel,
   clear: clear,
-  setDue: setDue
+  setDue: setDue,
+  notifyAssigned: notifyAssigned
 };
 
 // item = {id : int, value : String, important : bool, child : idOfOtherItem}
@@ -116,8 +119,10 @@ function assign(robot, id, assignee) {
   if (assignees.split(" ").includes(assignee)) {
     return `${assignee} already assigned to this task.`;
   }
-  assignees = (assignees + " " + assignee).trim();
-
+  if (assignees) {
+    assignees += ", "
+  }
+  assignees += assignee.trim();
   getAgenda(robot)[id].assignee = assignees;
   return `Successfully assigned #${id + 1} to ${assignee}. Total assigned: ${assignees}`;
 }
@@ -169,7 +174,7 @@ function setImportance(robot, id, importance) {
 
 function setDue(robot, id, month, day) {
   getAgenda(robot)[id].dueDate = { month: month, day: day };
-  return `Set item #${id+1} due date to ${month}/${day}`;
+  return `Set item #${id + 1} due date to ${month}/${day}`;
 }
 
 /**
@@ -289,6 +294,36 @@ function listAgendaChannel(robot, channel) {
   robot.messageRoom(channel, getAgendaSlack(robot));
 }
 
+function notifyAssigned(robot) {
+  let agenda = getAgenda(robot);
+  l.log("NOTIFYING ASSIGNED PARTIES", "notification");
+  for (i in agenda) {
+    let task = agenda[i];
+    if (task.dueDate) {
+      let daysToDue = schedule.daysUntil(task.dueDate.month, task.dueDate.day);
+      if (config.NOTIFY_DAYS_AHEAD.indexOf(daysToDue) > -1) {
+        //notify assigned
+        if (task.assignee) {
+          let users = task.assignee.split(", ");
+          for (j in users) {
+            let user = users[j];
+            if (/^[#@][\w' .\(\)]+$/.test(user)) {
+              try {
+                robot.messageRoom(user, getMessageSlack(`"${task.value}" is due in ${daysToDue} days!`,task.color));
+                l.log(`SUCCESSFULLY MESSAGED ROOM ${user}`, "notification");
+              } catch (e) {
+                l.log(`UNABLE TO MESSAGE ROOM ${user}`, "notification");
+              }
+            } else {
+              l.log(`ROOM ${user} DOES NOT MATCH CHANNEL OR USER TOKEN`);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 /**
  * Get the agenda and format it as a json payload for Slack
  * @param  {Object} robot Hubot object
@@ -309,10 +344,10 @@ function getAgendaSlack(robot) {
         "short": false
       });
     }
-    if(item.dueDate){
+    if (item.dueDate) {
       fields.push({
         "title": `Due: ${item.dueDate.month}/${item.dueDate.day}`,
-        "short":true
+        "short": true
       })
     }
     if (item.assignee && item.assignee.length != 0) {
@@ -331,6 +366,15 @@ function getAgendaSlack(robot) {
   }
   return {
     "attachments": attachments
+  };
+}
+
+function getMessageSlack(message, color){
+  return {
+    attachments: [{
+      "text":message,
+      "color":color
+    }]
   };
 }
 

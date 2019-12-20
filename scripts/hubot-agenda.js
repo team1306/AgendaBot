@@ -6,7 +6,7 @@
 //   hubot rm/rem/remove <item> - Removes <item> from the agenda
 //   hubot clear - Clear the agenda
 //   hubot update <id> <new text> - Updates <id> with <new text>
-//   hubot assign <id> <assignee> - Assign an item to <assignee>
+//   hubot assign <id> <assignee> - Assign an item to <assignee>. Multiple assignees can be inputed separated by commas
 //   hubot unassign <id> <assignee> - Unassign an item. An assignee of 'a' or 'all' removes all assignees.
 //   hubot set due <id> <mm> <dd> - Set a due date to the item. mm is an integer 1 - 12 representing the month, and dd is a number 1-31 for the day.
 //   hubot set importance <id> <level> - Set the importance/color of an item. <level> = 'high', 'medium', 'low', or 'default'.
@@ -20,17 +20,18 @@
 // ================================================================================================
 // Module dependencies
 // ================================================================================================
-const _        = require('underscore');
-const moment   = require('moment');
-const l        = require('@samr28/log');
-const agenda   = require('./agenda');
-const utils    = require('./utils');
+const _ = require('underscore');
+const moment = require('moment');
+const l = require('@samr28/log');
+const agenda = require('./agenda');
+const utils = require('./utils');
 const schedule = require('./schedule');
-const config   = require('../config');
+const config = require('../config');
 
 l.on();
 l.setColors({
-  redis: "blue"
+  redis: "blue",
+  notification: "red"
 });
 const REDIS_BRAIN_KEY = "agenda";
 
@@ -104,6 +105,15 @@ module.exports = function (robot) {
         config.NOTIFY_GROUPS.forEach(function (user) {
           robot.messageRoom(user, new Error('Unable to set schedule at startup!'));
         });
+      } else if (config.NOTIFY_ASSIGNED) {
+        //let assigned individuals know that the task is due
+        let rule = new schedule.RecurrenceRule();
+        rule.hour = config.ANNOUNCE_TIME_HR;
+        rule.minute = config.ANNOUNCE_TIME_MIN;
+        schedule.scheduleCallbackRegular((function (robot) {
+          console.log(agenda.notifyAssigned);
+          agenda.notifyAssigned(robot);
+        }).bind(null, robot), rule, "NOTIFY ASSIGNED");
       }
     }
   }
@@ -249,7 +259,7 @@ function due(robot, msg) {
   let month = msg.match[2];
   let day = msg.match[3];
   utils.logMsgData(msg, `SET DUEDATE #${id} TO MNTH ${month} AND DAY ${day}`);
-  if (id < 1 || isNaN(id) ||id>agenda.getAgenda(robot).length) {
+  if (id < 1 || isNaN(id) || id > agenda.getAgenda(robot).length) {
     return msg.send(`I didn't understand id '${id}'. Type 'agenda help' for help`);
   }
   if (month < 1 || month > 12 || isNaN(month)) {
@@ -258,5 +268,5 @@ function due(robot, msg) {
   if (day < 1 || day > 31 || isNaN(day)) {
     return `I didn't understand day '${day}'. Type 'agenda help' for help`;
   }
-  return msg.send(agenda.setDue(robot, id-1, month, day));
+  return msg.send(agenda.setDue(robot, id - 1, month, day));
 }
