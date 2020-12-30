@@ -44,8 +44,14 @@ function addSchedule(robot) {
     ANNOUNCE_TIME_HR, ANNOUNCE_TIME_MIN);
   let j = schedule.scheduleJob(nextDateWithTime, function () {
     l.log('Sending out scheduled agenda', "schedule");
-    agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
-    addSchedule(robot);
+    try{
+      agenda.listAgendaChannel(robot, ANNOUNCE_CHANNEL);
+    }
+    catch(error){
+      l.log('Unable to send out scheduled agenda', "schedule");
+    } finally{
+      addSchedule(robot);
+    }
   });
 }
 
